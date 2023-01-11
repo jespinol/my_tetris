@@ -26,7 +26,7 @@
                 <div>
                     <button type="button" class="btn btn-lg btn-secondary" id="playButton" data-bs-toggle="button"
                             autocomplete="off">
-                        PLAY
+                        Start
                     </button>
                 </div>
                 <p>
@@ -61,54 +61,36 @@
 <script>
     const button = document.getElementById("playButton");
     const canvas = document.getElementById("canvas");
-    const context = canvas.getContext("2d");
+    const ctx = canvas.getContext("2d");
+    let game = new Game(ctx);
+    let key = null;
+    let gameActive = false;
+    let interval;
+    let speed = 2000;
+
+    window.addEventListener('keydown', function (event) {
+        if (event.defaultPrevented) {
+            return;
+        }
+        key = event.code;
+        event.preventDefault();
+    }, true);
 
     button.addEventListener("click", function () {
-        let game = new Game(context);
-        game.draw();
+        gameActive = !gameActive;
+        if (gameActive) {
+            button.innerText = "Pause";
+            interval = setInterval(function() {
+                game.play(key);
+                key = null;
+            }, speed);
+        }
+        if (!gameActive) {
+            button.innerText = "Play";
+            console.log("game paused");
+            clearInterval(interval);
+        }
     });
-    // let canvas = document.getElementById("canvas");
-    // let context = canvas.getContext("2d");
-    // let button = document.getElementById("playButton");
-    // let game = new Game(canvas);
-    // let isGameActive = false;
-    // // button.addEventListener("click", function () {
-    // //     isGameActive = !isGameActive;
-    // //     while (isGameActive) {
-    // //
-    // //     }
-    // // })
-    // window.addEventListener("keydown", function (key) {
-    //     if (key.defaultPrevented) {
-    //         return;
-    //     }
-    //     game.updateField(key.code)
-    //     // update field of game
-    //     key.preventDefault();
-    // })
-
-
-    // let isNewGame = true;
-    // let isGameActive = false;
-    // let isGameOver = false;
-    //
-    // let canvas = document.getElementById("canvas");
-    // let button = document.getElementById("playButton");
-    // button.addEventListener("click", function () {
-    //     isGameActive = !isGameActive;
-    //     console.log("clicked")
-    //     while (isGameActive && !isGameOver) {
-    //         console.log("game running");
-    //         init(isNewGame, canvas);
-    //         // window.addEventListener('keydown',function(key) {
-    //         //     if (key.defaultPrevented) {
-    //         //         return;
-    //         //     }
-    //         //     keyPressed(key);
-    //         //     key.preventDefault();
-    //         // },true);
-    //     }
-    // });
 </script>
 </body>
 </html>
