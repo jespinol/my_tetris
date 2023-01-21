@@ -72,6 +72,7 @@ class Tetromino {
     //     }, // Smashboy
     // };
     // only L tetromino for debugging
+    // debugging: only use Orange Ricky
     tetrominoes = {
         l: {
             shape: [
@@ -81,7 +82,7 @@ class Tetromino {
             color: "orange",
             xStart: 1,
             yStart: 10
-        } // Orange Ricky
+        }
     };
 
     constructor() {
@@ -90,7 +91,6 @@ class Tetromino {
         this.yPos = this.tetromino.yStart;
         currentShape = this.tetromino.shape;
         currentColor = this.tetromino.color;
-        // console.log("shape ", currentShape);
     }
 
     selectTetromino() {
@@ -130,17 +130,6 @@ class Field {
     constructor() {
         this.tetromino = new Tetromino(context);
         this.gameArea = this.createNewGameArea();
-        // this.gameArea[1][0] = [1, "white"];
-        // this.gameArea[3][0] = [1, "white"];
-        // this.gameArea[5][0] = [1, "white"];
-        // this.gameArea[7][0] = [1, "white"];
-        // this.gameArea[9][0] = [1, "white"];
-        // this.gameArea[11][0] = [1, "white"];
-        // this.gameArea[13][0] = [1, "white"];
-        // this.gameArea[15][0] = [1, "white"];
-        // this.gameArea[17][0] = [1, "white"];
-        // this.gameArea[19][0] = [1, "white"];
-        // console.log("original", this.gameArea);
     }
 
     stackNeedsUpdate = false;
@@ -192,14 +181,14 @@ class Field {
 
     checkSolidBlocksOnSides(side) {
         if (side === "left") {
-            for(let i = 0; i < currentShape.length; i++) {
+            for (let i = 0; i < currentShape.length; i++) {
                 if (currentShape[i][0] !== 0) {
                     return true;
                 }
             }
             return false;
         }
-        for(let i = 0; i < currentShape.length; i++) {
+        for (let i = 0; i < currentShape.length; i++) {
             if (currentShape[i][currentShape[0].length - 1] !== 0) {
                 return true;
             }
@@ -207,6 +196,30 @@ class Field {
         return false;
 
     }
+
+    verifyPositionChange(move) {
+        let atTopOfStack = ((this.tetromino.yPos + 1) * CELL_SIZE) === (context.canvas.height - ((currentShape.length + 1) * CELL_SIZE));
+        let solidBlocksDown = !(currentShape[currentShape.length - 1].includes(1));
+        let leftChangePossible = ((this.tetromino.xPos - 1) * CELL_SIZE) >= 0;
+        let rightChangePossible = ((this.tetromino.xPos + 1) * CELL_SIZE) <= (context.canvas.width - (currentShape[0].length * CELL_SIZE));
+        let downChangePossible = ((this.tetromino.yPos + 1) * CELL_SIZE) < (context.canvas.height - ((currentShape.length + 1) * CELL_SIZE));
+        switch (move) {
+            case "up":
+                break;
+            case "down":
+                break;
+            case "left":
+                break;
+            case "right":
+                break;
+            case "drop":
+                break;
+            default:
+                break;
+        }
+        return true;
+    }
+
     updateTetrominoPosition(key) {
         let atTopOfStack = ((this.tetromino.yPos + 1) * CELL_SIZE) === (context.canvas.height - ((currentShape.length + 1) * CELL_SIZE));
         let solidBlocksDown = !(currentShape[currentShape.length - 1].includes(1));
@@ -214,7 +227,6 @@ class Field {
         let rightChangePossible = ((this.tetromino.xPos + 1) * CELL_SIZE) <= (context.canvas.width - (currentShape[0].length * CELL_SIZE));
         let downChangePossible = ((this.tetromino.yPos + 1) * CELL_SIZE) < (context.canvas.height - ((currentShape.length + 1) * CELL_SIZE));
 
-        console.log(leftChangePossible)
         switch (key) {
             // case"ArrowUp":
             //     if (this.tetromino.yPos + CELL_SIZE < context.canvas.height) {
@@ -222,7 +234,6 @@ class Field {
             //     }
             //     break;
             case "ArrowDown":
-                // console.log("top of stack: ", atTopOfStack, " solid down:", !solidBlocksDown, " change possible: ", downChangePossible)
                 if (downChangePossible) {
                     this.tetromino.yPos += 1;
                 }
