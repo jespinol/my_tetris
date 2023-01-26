@@ -1,6 +1,6 @@
-const COLUMNS = 10;
-const ROWS = 20;
 const CELL_SIZE = 20;
+let columns;
+let rows;
 let context;
 let currentShape;
 let currentColor;
@@ -13,7 +13,7 @@ class Tetromino {
     //             [1, 2, 1],
     //             [0, 0, 0]],
     //         color: "orange",
-    //         xStart: (COLUMNS / 2) * CELL_SIZE,
+    //         xStart: (columns / 2) * CELL_SIZE,
     //         yStart: 5 * CELL_SIZE
     //     }, // Orange Ricky
     //     j: {
@@ -22,7 +22,7 @@ class Tetromino {
     //             [1, 2, 1],
     //             [0, 0, 0]],
     //         color: "blue",
-    //         xStart: (COLUMNS / 2) * CELL_SIZE,
+    //         xStart: (columns / 2) * CELL_SIZE,
     //         yStart: 5 * CELL_SIZE
     //     }, // Blue Ricky
     //     z: {
@@ -31,7 +31,7 @@ class Tetromino {
     //             [0, 2, 1],
     //             [0, 0, 0]],
     //         color: "red",
-    //         xStart: (COLUMNS / 2) * CELL_SIZE,
+    //         xStart: (columns / 2) * CELL_SIZE,
     //         yStart: 5 * CELL_SIZE
     //     }, // Cleveland Z
     //     s: {
@@ -40,7 +40,7 @@ class Tetromino {
     //             [1, 2, 0],
     //             [0, 0, 0]],
     //         color: "green",
-    //         xStart: (COLUMNS / 2) * CELL_SIZE,
+    //         xStart: (columns / 2) * CELL_SIZE,
     //         yStart: 5 * CELL_SIZE
     //     }, // Rhode Island Z
     //     i: {
@@ -50,7 +50,7 @@ class Tetromino {
     //             [0, 0, 0, 0],
     //             [0, 0, 0, 0]],
     //         color: "cyan",
-    //         xStart: (COLUMNS / 2) * CELL_SIZE,
+    //         xStart: (columns / 2) * CELL_SIZE,
     //         yStart: 5 * CELL_SIZE
     //     }, // Hero
     //     t: {
@@ -59,7 +59,7 @@ class Tetromino {
     //             [1, 2, 1],
     //             [0, 0, 0]],
     //         color: "purple",
-    //         xStart: (COLUMNS / 2) * CELL_SIZE,
+    //         xStart: (columns / 2) * CELL_SIZE,
     //         yStart: 5 * CELL_SIZE
     //     }, // Teewee
     //     o: {
@@ -67,21 +67,21 @@ class Tetromino {
     //             [1, 1],
     //             [1, 1]],
     //         color: "yellow",
-    //         xStart: (COLUMNS / 2) * CELL_SIZE,
+    //         xStart: (columns / 2) * CELL_SIZE,
     //         yStart: 5 * CELL_SIZE
     //     }, // Smashboy
     // };
     // only L tetromino for debugging
     // debugging: only use Orange Ricky
     tetrominoes = {
-        l: {
+        test: {
             shape: [
-                [0, 0, 1],
+                [0, 1, 0],
                 [1, 1, 1],
                 [0, 0, 0]],
-            color: "orange",
-            xStart: 1,
-            yStart: 10
+            color: "cyan",
+            xStart: 3,
+            yStart: 5
         }
     };
 
@@ -129,15 +129,10 @@ class Tetromino {
 class Field {
     constructor() {
         this.tetromino = new Tetromino(context);
-        this.gameArea = this.createNewGameArea();
+        this.gameArea = Array.from({length: rows}, () => Array(columns).fill([1, "pink"]));
     }
 
     stackNeedsUpdate = false;
-
-    createNewGameArea() {
-        return Array.from({length: ROWS}, () =>
-            Array(COLUMNS).fill([1, "pink"]));
-    }
 
     updateField() {
         this.drawStack();
@@ -145,10 +140,6 @@ class Field {
         if (this.stackNeedsUpdate) {
             this.updateStack();
         }
-    }
-
-    hasTetrominoReachedStack() {
-        return false;
     }
 
     updateStack() {
@@ -161,13 +152,11 @@ class Field {
                 }
             });
         });
-
-
         this.tetromino = new Tetromino(context);
     }
 
     drawStack() {
-        console.log("drawing current stack")
+        // console.log("drawing current stack")
         this.gameArea.forEach((row, y) =>
             row.forEach((cell, x) => {
                 if (cell[0] > 0) {
@@ -176,106 +165,108 @@ class Field {
                 }
             })
         );
-
     }
 
-    checkSolidBlocksOnSides(side) {
-        if (side === "left") {
-            for (let i = 0; i < currentShape.length; i++) {
-                if (currentShape[i][0] !== 0) {
-                    return true;
-                }
-            }
-            return false;
-        }
-        for (let i = 0; i < currentShape.length; i++) {
-            if (currentShape[i][currentShape[0].length - 1] !== 0) {
-                return true;
-            }
-        }
-        return false;
-
-    }
-
-    verifyPositionChange(move) {
-        let atTopOfStack = ((this.tetromino.yPos + 1) * CELL_SIZE) === (context.canvas.height - ((currentShape.length + 1) * CELL_SIZE));
-        let solidBlocksDown = !(currentShape[currentShape.length - 1].includes(1));
-        let leftChangePossible = ((this.tetromino.xPos - 1) * CELL_SIZE) >= 0;
-        let rightChangePossible = ((this.tetromino.xPos + 1) * CELL_SIZE) <= (context.canvas.width - (currentShape[0].length * CELL_SIZE));
-        let downChangePossible = ((this.tetromino.yPos + 1) * CELL_SIZE) < (context.canvas.height - ((currentShape.length + 1) * CELL_SIZE));
-        switch (move) {
-            case "up":
-                break;
-            case "down":
-                break;
+    checkLastSolidBlockOnSide(side) {
+        let position = 0;
+        switch (side) {
             case "left":
+                position = currentShape[0].length;
+                for (let i = 0; i < currentShape.length; i++) {
+                    let positionOfSolidBlock = currentShape[i].indexOf(1);
+                    if (positionOfSolidBlock < position && positionOfSolidBlock >= 0) {
+                        position = positionOfSolidBlock;
+                    }
+                }
                 break;
             case "right":
+                for (let i = 0; i < currentShape.length; i++) {
+                    let positionOfSolidBlock = currentShape[i].lastIndexOf(1);
+                    if (positionOfSolidBlock > position) {
+                        position = positionOfSolidBlock;
+                    }
+                }
                 break;
-            case "drop":
-                break;
-            default:
+            case "down":
+                for (let i = 0; i < currentShape.length; i++) {
+                    if (currentShape[i].includes(1) && i > position) {
+                        position = i;
+                    }
+                }
                 break;
         }
-        return true;
+        return position;
+    }
+
+    verifyPositionChange(move, lastSolidBlock) {
+        switch (move) {
+            case "left":
+                return (this.tetromino.xPos + lastSolidBlock - 1) >= 0;
+            case "right":
+                return (this.tetromino.xPos + lastSolidBlock + 1) < columns;
+            case "down":
+                return (this.tetromino.yPos + lastSolidBlock + 1) < rows;
+            case "drop":
+                return false;
+            default:
+                return false;
+        }
+    }
+
+    calculateRotation(move) {
+        switch (move) {
+            case "clockwise turn":
+                return currentShape = currentShape[0].map((value, index) => currentShape.map(row => row[index]).reverse());
+            case "counterclockwise turn":
+                return currentShape = currentShape[0].map((value, index) => currentShape.map(row => row[row.length - index - 1]));
+            default:
+                return false;
+        }
     }
 
     updateTetrominoPosition(key) {
-        let atTopOfStack = ((this.tetromino.yPos + 1) * CELL_SIZE) === (context.canvas.height - ((currentShape.length + 1) * CELL_SIZE));
-        let solidBlocksDown = !(currentShape[currentShape.length - 1].includes(1));
-        let leftChangePossible = ((this.tetromino.xPos - 1) * CELL_SIZE) >= 0;
-        let rightChangePossible = ((this.tetromino.xPos + 1) * CELL_SIZE) <= (context.canvas.width - (currentShape[0].length * CELL_SIZE));
-        let downChangePossible = ((this.tetromino.yPos + 1) * CELL_SIZE) < (context.canvas.height - ((currentShape.length + 1) * CELL_SIZE));
-
+        let atTopOfStack = this.tetromino.yPos === (rows - currentShape.length);
+        let moveValid;
+        let potentialTurn;
         switch (key) {
-            // case"ArrowUp":
-            //     if (this.tetromino.yPos + CELL_SIZE < context.canvas.height) {
-            //         this.tetromino.yPos = context.canvas.height - CELL_SIZE;
-            //     }
-            //     break;
-            case "ArrowDown":
-                if (downChangePossible) {
-                    this.tetromino.yPos += 1;
-                }
-                if (atTopOfStack) {
-                    if (solidBlocksDown) {
-                        this.tetromino.yPos += 1;
-                    }
-                    this.stackNeedsUpdate = true;
-                }
-                break;
             case "ArrowLeft":
-                let solidBlocksLeft = this.checkSolidBlocksOnSides("left");
-                if (leftChangePossible) {
-                    this.tetromino.xPos -= 1;
-                } else if (!leftChangePossible && !solidBlocksLeft) {
+                moveValid = this.verifyPositionChange("left", this.checkLastSolidBlockOnSide("left"));
+                if (moveValid) {
                     this.tetromino.xPos -= 1;
                 }
                 break;
             case "ArrowRight":
-                let solidBlocksRight = this.checkSolidBlocksOnSides("right");
-                if (rightChangePossible) {
+                moveValid = this.verifyPositionChange("right", this.checkLastSolidBlockOnSide("right"));
+                if (moveValid) {
                     this.tetromino.xPos += 1;
                 }
                 break;
             case"KeyA":
-                currentShape = currentShape[0].map((value, index) => currentShape.map(row => row[index]).reverse());
+                currentShape = this.calculateRotation("clockwise turn");
                 break;
             case "KeyB":
-                currentShape = currentShape[0].map((value, index) => currentShape.map(row => row[row.length - index - 1]));
+                currentShape = this.calculateRotation("counterclockwise turn");
                 break;
+            case "ArrowDown":
             default:
+                moveValid = this.verifyPositionChange("down", this.checkLastSolidBlockOnSide("down"));
+                if (moveValid) {
+                    this.tetromino.yPos += 1;
+                }
+                // if (atTopOfStack) {
+                //     this.stackNeedsUpdate = true;
+                // }
                 break;
         }
-        // if ((this.tetromino.yPos + 1) * CELL_SIZE < context.canvas.height) {
-        //     this.tetromino.yPos += 1;
-        // }
+        this.stackNeedsUpdate = atTopOfStack;
     }
 }
 
 class Game {
     constructor(ctx) {
         context = ctx;
+        columns = ctx.canvas.width / CELL_SIZE;
+        rows = ctx.canvas.height / CELL_SIZE;
         this.field = new Field(context);
     }
 
@@ -283,7 +274,6 @@ class Game {
     moveRate = 1;
 
     play(key) {
-        // let {width, height} = context.canvas;
         context.clearRect(0, 0, context.canvas.width, context.canvas.height);
         this.field.updateTetrominoPosition(key);
         this.field.updateField();
