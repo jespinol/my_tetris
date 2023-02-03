@@ -6,84 +6,84 @@ let currentShape;
 let currentColor;
 
 class Tetromino {
-    // tetrominoes = {
-    //     l: {
-    //         shape: [
-    //             [0, 0, 1],
-    //             [1, 2, 1],
-    //             [0, 0, 0]],
-    //         color: "orange",
-    //         xStart: (columns / 2) * CELL_SIZE,
-    //         yStart: 5 * CELL_SIZE
-    //     }, // Orange Ricky
-    //     j: {
-    //         shape: [
-    //             [1, 0, 0],
-    //             [1, 2, 1],
-    //             [0, 0, 0]],
-    //         color: "blue",
-    //         xStart: (columns / 2) * CELL_SIZE,
-    //         yStart: 5 * CELL_SIZE
-    //     }, // Blue Ricky
-    //     z: {
-    //         shape: [
-    //             [1, 1, 0],
-    //             [0, 2, 1],
-    //             [0, 0, 0]],
-    //         color: "red",
-    //         xStart: (columns / 2) * CELL_SIZE,
-    //         yStart: 5 * CELL_SIZE
-    //     }, // Cleveland Z
-    //     s: {
-    //         shape: [
-    //             [0, 1, 1],
-    //             [1, 2, 0],
-    //             [0, 0, 0]],
-    //         color: "green",
-    //         xStart: (columns / 2) * CELL_SIZE,
-    //         yStart: 5 * CELL_SIZE
-    //     }, // Rhode Island Z
-    //     i: {
-    //         shape: [
-    //             [0, 0, 0, 0],
-    //             [1, 2, 2, 1],
-    //             [0, 0, 0, 0],
-    //             [0, 0, 0, 0]],
-    //         color: "cyan",
-    //         xStart: (columns / 2) * CELL_SIZE,
-    //         yStart: 5 * CELL_SIZE
-    //     }, // Hero
-    //     t: {
-    //         shape: [
-    //             [0, 1, 0],
-    //             [1, 2, 1],
-    //             [0, 0, 0]],
-    //         color: "purple",
-    //         xStart: (columns / 2) * CELL_SIZE,
-    //         yStart: 5 * CELL_SIZE
-    //     }, // Teewee
-    //     o: {
-    //         shape: [
-    //             [1, 1],
-    //             [1, 1]],
-    //         color: "yellow",
-    //         xStart: (columns / 2) * CELL_SIZE,
-    //         yStart: 5 * CELL_SIZE
-    //     }, // Smashboy
-    // };
-    // only L tetromino for debugging
-    // debugging: only use Orange Ricky
     tetrominoes = {
-        test: {
+        l: {
+            shape: [
+                [0, 0, 1],
+                [1, 1, 1],
+                [0, 0, 0]],
+            color: "orange",
+            xStart: 0,
+            yStart: 0
+        }, // Orange Ricky
+        j: {
+            shape: [
+                [1, 0, 0],
+                [1, 1, 1],
+                [0, 0, 0]],
+            color: "blue",
+            xStart: 0,
+            yStart: 0
+        }, // Blue Ricky
+        z: {
+            shape: [
+                [1, 1, 0],
+                [0, 1, 1],
+                [0, 0, 0]],
+            color: "red",
+            xStart: 0,
+            yStart: 0
+        }, // Cleveland Z
+        s: {
+            shape: [
+                [0, 1, 1],
+                [1, 1, 0],
+                [0, 0, 0]],
+            color: "green",
+            xStart: 0,
+            yStart: 0
+        }, // Rhode Island Z
+        i: {
+            shape: [
+                [0, 0, 0, 0],
+                [1, 1, 1, 1],
+                [0, 0, 0, 0],
+                [0, 0, 0, 0]],
+            color: "cyan",
+            xStart: 0,
+            yStart: 0
+        }, // Hero
+        t: {
             shape: [
                 [0, 1, 0],
                 [1, 1, 1],
                 [0, 0, 0]],
-            color: "cyan",
-            xStart: 3,
-            yStart: 5
-        }
+            color: "purple",
+            xStart: 0,
+            yStart: 0
+        }, // Teewee
+        o: {
+            shape: [
+                [1, 1],
+                [1, 1]],
+            color: "yellow",
+            xStart: 0,
+            yStart: 0
+        }, // Smashboy
     };
+    // only one tetromino for debugging
+    // debugging: only use Orange Ricky
+    // tetrominoes = {
+    //     test: {
+    //         shape: [
+    //             [0, 1, 0],
+    //             [1, 1, 1],
+    //             [0, 0, 0]],
+    //         color: "cyan",
+    //         xStart: 0,
+    //         yStart: 0
+    //     }
+    // };
 
     constructor() {
         this.tetromino = this.selectTetromino();
@@ -129,10 +129,11 @@ class Tetromino {
 class Field {
     constructor() {
         this.tetromino = new Tetromino(context);
-        this.gameArea = Array.from({length: rows}, () => Array(columns).fill([1, "pink"]));
+        this.gameArea = Array.from({length: rows}, () => Array(columns).fill([2, "pink"]));
     }
 
     stackNeedsUpdate = false;
+    lowestRowOfStack = 21;
 
     updateField() {
         this.drawStack();
@@ -167,7 +168,7 @@ class Field {
         );
     }
 
-    checkLastSolidBlockOnSide(side) {
+    firstOrLastSolidBlockOnSide (side) {
         let position = 0;
         switch (side) {
             case "left":
@@ -193,50 +194,81 @@ class Field {
                         position = i;
                     }
                 }
-                break;
         }
         return position;
     }
 
-    verifyPositionChange(move, lastSolidBlock) {
+    isThereWallConflict(move, potentialPosition) {
         switch (move) {
             case "left":
-                return (this.tetromino.xPos + lastSolidBlock - 1) >= 0;
+                return potentialPosition + this.firstOrLastSolidBlockOnSide("left") < 0;
             case "right":
-                return (this.tetromino.xPos + lastSolidBlock + 1) < columns;
+                return potentialPosition + this.firstOrLastSolidBlockOnSide("right") >= columns;
             case "down":
-                return (this.tetromino.yPos + lastSolidBlock + 1) < rows;
-            case "drop":
-                return false;
-            default:
-                return false;
+                return potentialPosition + this.firstOrLastSolidBlockOnSide("down") >= rows;
         }
+        return true;
+    }
+
+    validatePositionChange(move) {
+        let potentialPosition;
+        let wallConflict = false;
+        switch (move) {
+            case "left":
+                potentialPosition = this.tetromino.xPos - 1;
+                wallConflict = this.isThereWallConflict("left", potentialPosition);
+                if (!wallConflict) {
+                    return true;
+                }
+                break;
+            case "right":
+                potentialPosition = this.tetromino.xPos + 1;
+                console.log(`potential x position ${potentialPosition}`)
+                wallConflict = this.isThereWallConflict("right", potentialPosition);
+                console.log(`wall conflict ${wallConflict}`);
+                if (!wallConflict) {
+                    return true;
+                }
+                break;
+            case "down":
+                potentialPosition = this.tetromino.yPos + 1;
+                console.log(`potential x position ${potentialPosition}`)
+                wallConflict = this.isThereWallConflict("down", potentialPosition);
+                console.log(`wall conflict ${wallConflict}`);
+                if (!wallConflict) {
+                    return true;
+                }
+        }
+        return false;
     }
 
     calculateRotation(move) {
         switch (move) {
             case "clockwise turn":
-                return currentShape = currentShape[0].map((value, index) => currentShape.map(row => row[index]).reverse());
+                return currentShape[0].map((value, index) => currentShape.map(row => row[index]).reverse());
             case "counterclockwise turn":
-                return currentShape = currentShape[0].map((value, index) => currentShape.map(row => row[row.length - index - 1]));
+                return currentShape[0].map((value, index) => currentShape.map(row => row[row.length - index - 1]));
             default:
                 return false;
         }
     }
 
     updateTetrominoPosition(key) {
-        let atTopOfStack = this.tetromino.yPos === (rows - currentShape.length);
+        let atTopOfStack = this.tetromino.yPos + this.firstOrLastSolidBlockOnSide("down") === rows - 1;
         let moveValid;
         let potentialTurn;
         switch (key) {
+            case "ArrowUp":
+                this.tetromino.yPos -= 1;
+                break;
             case "ArrowLeft":
-                moveValid = this.verifyPositionChange("left", this.checkLastSolidBlockOnSide("left"));
+                moveValid = this.validatePositionChange("left");
                 if (moveValid) {
                     this.tetromino.xPos -= 1;
                 }
                 break;
             case "ArrowRight":
-                moveValid = this.verifyPositionChange("right", this.checkLastSolidBlockOnSide("right"));
+                moveValid = this.validatePositionChange("right");
                 if (moveValid) {
                     this.tetromino.xPos += 1;
                 }
@@ -248,8 +280,8 @@ class Field {
                 currentShape = this.calculateRotation("counterclockwise turn");
                 break;
             case "ArrowDown":
-            default:
-                moveValid = this.verifyPositionChange("down", this.checkLastSolidBlockOnSide("down"));
+            // default:
+                moveValid = this.validatePositionChange("down");
                 if (moveValid) {
                     this.tetromino.yPos += 1;
                 }
