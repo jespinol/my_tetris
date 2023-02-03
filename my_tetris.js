@@ -243,6 +243,7 @@ class Field {
     }
 
     calculateRotation(move) {
+        // here check for wall kicks
         switch (move) {
             case "clockwise turn":
                 return currentShape[0].map((value, index) => currentShape.map(row => row[index]).reverse());
