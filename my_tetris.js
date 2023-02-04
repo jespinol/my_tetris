@@ -133,7 +133,7 @@ class Field {
     }
 
     stackNeedsUpdate = false;
-    lowestRowOfStack = 21;
+    tetrominoOrientation = 0;
 
     updateField() {
         this.drawStack();
@@ -154,6 +154,7 @@ class Field {
             });
         });
         this.tetromino = new Tetromino(context);
+        this.tetrominoOrientation = 0;
     }
 
     drawStack() {
@@ -168,7 +169,7 @@ class Field {
         );
     }
 
-    firstOrLastSolidBlockOnSide (side) {
+    firstOrLastSolidBlockOnSide(side) {
         let position = 0;
         switch (side) {
             case "left":
@@ -198,19 +199,29 @@ class Field {
         return position;
     }
 
-    isThereWallConflict(move, potentialPosition) {
+    isThereWallConflict(move, position) {
         switch (move) {
             case "left":
-                return potentialPosition + this.firstOrLastSolidBlockOnSide("left") < 0;
+                return position + this.firstOrLastSolidBlockOnSide("left") < 0;
             case "right":
-                return potentialPosition + this.firstOrLastSolidBlockOnSide("right") >= columns;
+                return position + this.firstOrLastSolidBlockOnSide("right") >= columns;
             case "down":
-                return potentialPosition + this.firstOrLastSolidBlockOnSide("down") >= rows;
+                return position + this.firstOrLastSolidBlockOnSide("down") >= rows;
+            case "rotate":
+                let leftConflict = this.isThereWallConflict("left", this.tetromino.xPos);
+                let rightConflict = this.isThereWallConflict("right", this.tetromino.xPos);
+                let downConflict = this.isThereWallConflict("down", this.tetromino.yPos);
+                return leftConflict || rightConflict || downConflict;
+            default:
+                return true;
         }
-        return true;
     }
 
-    validatePositionChange(move) {
+    isThereStackConflict(position) {
+
+    }
+
+    isPositionChangeValid(move) {
         let potentialPosition;
         let wallConflict = false;
         switch (move) {
@@ -223,18 +234,20 @@ class Field {
                 break;
             case "right":
                 potentialPosition = this.tetromino.xPos + 1;
-                console.log(`potential x position ${potentialPosition}`)
                 wallConflict = this.isThereWallConflict("right", potentialPosition);
-                console.log(`wall conflict ${wallConflict}`);
                 if (!wallConflict) {
                     return true;
                 }
                 break;
             case "down":
                 potentialPosition = this.tetromino.yPos + 1;
-                console.log(`potential x position ${potentialPosition}`)
                 wallConflict = this.isThereWallConflict("down", potentialPosition);
-                console.log(`wall conflict ${wallConflict}`);
+                if (!wallConflict) {
+                    return true;
+                }
+                break;
+            case "rotate":
+                wallConflict = this.isThereWallConflict("rotate");
                 if (!wallConflict) {
                     return true;
                 }
@@ -243,15 +256,36 @@ class Field {
     }
 
     calculateRotation(move) {
-        // here check for wall kicks
+        let previousOrientation = currentShape;
+        let isNewOrientationValid;
+        let canKickWall;
         switch (move) {
             case "clockwise turn":
-                return currentShape[0].map((value, index) => currentShape.map(row => row[index]).reverse());
+                currentShape = currentShape[0].map((value, index) => currentShape.map(row => row[index]).reverse());
+                isNewOrientationValid = this.isPositionChangeValid("rotate");
+                if (!isNewOrientationValid) {
+                    canKickWall = this.testWallKick(move);
+                    if (!canKickWall) {
+                        currentShape = previousOrientation;
+                    }
+                }
+                this.tetrominoOrientation++;
+                return;
             case "counterclockwise turn":
-                return currentShape[0].map((value, index) => currentShape.map(row => row[row.length - index - 1]));
+                currentShape = currentShape[0].map((value, index) => currentShape.map(row => row[row.length - index - 1]));
+                isNewOrientationValid = this.isPositionChangeValid("rotate");
+                if (!isNewOrientationValid) {
+                    currentShape = previousOrientation;
+                }
+                this.tetrominoOrientation--;
+                return;
             default:
-                return false;
+                return;
         }
+    }
+
+    testWallKick(move) {
+        let turning
     }
 
     updateTetrominoPosition(key) {
@@ -263,26 +297,26 @@ class Field {
                 this.tetromino.yPos -= 1;
                 break;
             case "ArrowLeft":
-                moveValid = this.validatePositionChange("left");
+                moveValid = this.isPositionChangeValid("left");
                 if (moveValid) {
                     this.tetromino.xPos -= 1;
                 }
                 break;
             case "ArrowRight":
-                moveValid = this.validatePositionChange("right");
+                moveValid = this.isPositionChangeValid("right");
                 if (moveValid) {
                     this.tetromino.xPos += 1;
                 }
                 break;
             case"KeyA":
-                currentShape = this.calculateRotation("clockwise turn");
+                this.calculateRotation("clockwise turn");
                 break;
             case "KeyB":
-                currentShape = this.calculateRotation("counterclockwise turn");
+                this.calculateRotation("counterclockwise turn");
                 break;
             case "ArrowDown":
-            // default:
-                moveValid = this.validatePositionChange("down");
+                // default:
+                moveValid = this.isPositionChangeValid("down");
                 if (moveValid) {
                     this.tetromino.yPos += 1;
                 }
