@@ -19,7 +19,8 @@
         <div class="col-md" id="leftCol">
             <div class="border">
                 <p>
-                    Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua
+                    Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore
+                    et dolore magna aliqua
                 </p>
                 <div>
                     <button type="button" class="btn btn-lg btn-secondary" id="playButton" data-bs-toggle="button"
@@ -30,11 +31,18 @@
                 <div>
                     <button type="button" class="btn btn-lg btn-secondary" id="switch" data-bs-toggle="button"
                             autocomplete="off">
-                        Switch
+                        Tetromino
+                    </button>
+                </div>
+                <div>
+                    <button type="button" class="btn btn-lg btn-secondary" id="field" data-bs-toggle="button"
+                            autocomplete="off">
+                        Field
                     </button>
                 </div>
                 <p>
-                    Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat
+                    Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo
+                    consequat
                 </p>
             </div>
         </div>
@@ -60,8 +68,10 @@
     let game = new Game(ctx);
     let key = null;
     let gameActive = false;
-    let interval;
-    let speed = 500;
+    let intervalId;
+
+    let speed = 1000;
+    let levelUp = false;
 
     window.addEventListener('keydown', function (event) {
         if (event.defaultPrevented) {
@@ -69,7 +79,13 @@
         }
         key = event.code;
         if (gameActive) {
-            game.play(key);
+            if (key === "Escape" || key === "F1") {
+                gameActive = false;
+                clearInterval(intervalId)
+                button.innerText = "Play";
+            } else {
+                game.play(key);
+            }
         }
         key = null;
         event.preventDefault();
@@ -77,20 +93,348 @@
 
     button.addEventListener("click", function () {
         gameActive = !gameActive;
+        clearInterval(intervalId);
         if (gameActive) {
             button.innerText = "Pause";
-            interval = setInterval(function() {
-                game.play();
+            // console.log(`top of if block`)
+            intervalId = setInterval(function () {
+                // console.log(`speed is ${speed}`)
+                levelUp = game.play("auto");
+                // console.log(`level up is ${levelUp}`)
+                if (levelUp) {
+                    console.log("leveling up")
+                    // levelUp = false;
+                    speed = 1000 * Math.pow((0.8 - (game.level - 1) * 0.007), game.level - 1);
+                }
             }, speed);
+            // console.log(`bottom of if block`)
         }
         if (!gameActive) {
             button.innerText = "Play";
-            clearInterval(interval);
+            // clearInterval(intervalId);
         }
     });
+
     // debugging: switch tetromino
-    document.getElementById("switch").addEventListener("click", function(){
+    document.getElementById("switch").addEventListener("click", function () {
         game.field.tetromino = new Tetromino(ctx);
+    });
+
+    // debugging: changes field to one with rows that are almost complete
+    document.getElementById("field").addEventListener("click", function () {
+        let almostFull = [
+            [
+                [0, ''], [0, ''],
+                [0, ''], [0, ''],
+                [0, ''], [0, ''],
+                [0, ''], [0, ''],
+                [0, ''], [0, '']
+            ],
+            [
+                [0, ''], [0, ''],
+                [0, ''], [0, ''],
+                [0, ''], [0, ''],
+                [0, ''], [0, ''],
+                [0, ''], [0, '']
+            ],
+            [
+                [0, ''], [0, ''],
+                [0, ''], [0, ''],
+                [0, ''], [0, ''],
+                [0, ''], [0, ''],
+                [0, ''], [0, '']
+            ],
+            [
+                [0, ''], [0, ''],
+                [0, ''], [0, ''],
+                [0, ''], [0, ''],
+                [0, ''], [0, ''],
+                [0, ''], [0, '']
+            ],
+            [
+                [0, ''], [0, ''],
+                [0, ''], [0, ''],
+                [0, ''], [0, ''],
+                [0, ''], [0, ''],
+                [0, ''], [0, '']
+            ],
+            [
+                [0, ''], [0, ''],
+                [0, ''], [0, ''],
+                [0, ''], [0, ''],
+                [0, ''], [0, ''],
+                [0, ''], [0, '']
+            ],
+            [
+                [0, ''], [0, ''],
+                [0, ''], [0, ''],
+                [0, ''], [0, ''],
+                [0, ''], [0, ''],
+                [0, ''], [0, '']
+            ],
+            [
+                [0, ''], [0, ''],
+                [0, ''], [0, ''],
+                [0, ''], [0, ''],
+                [0, ''], [0, ''],
+                [0, ''], [0, '']
+            ],
+            [
+                [0, ''], [0, ''],
+                [0, ''], [0, ''],
+                [0, ''], [0, ''],
+                [0, ''], [0, ''],
+                [0, ''], [0, '']
+            ],
+            [
+                [0, ''], [0, ''],
+                [0, ''], [0, ''],
+                [0, ''], [0, ''],
+                [0, ''], [0, ''],
+                [0, ''], [0, '']
+            ],
+            [
+                [0, ''], [0, ''],
+                [0, ''], [0, ''],
+                [0, ''], [0, ''],
+                [0, ''], [0, ''],
+                [0, ''], [0, '']
+            ],
+            [
+                [0, ''], [0, ''],
+                [0, ''], [0, ''],
+                [0, ''], [0, ''],
+                [0, ''], [0, ''],
+                [0, ''], [0, '']
+            ],
+            [
+                [0, ''], [0, ''],
+                [0, ''], [0, ''],
+                [0, ''], [0, ''],
+                [0, ''], [0, ''],
+                [0, ''], [0, '']
+            ],
+            [
+                [0, ''], [0, ''],
+                [0, ''], [0, ''],
+                [0, ''], [0, ''],
+                [0, ''], [0, ''],
+                [0, ''], [0, '']
+            ],
+            [
+                [0, ''], [0, ''],
+                [0, ''], [0, ''],
+                [0, ''], [0, ''],
+                [0, ''], [0, ''],
+                [0, ''], [0, '']
+            ],
+            [
+                [0, ''], [0, ''],
+                [0, ''], [0, ''],
+                [0, ''], [0, ''],
+                [0, ''], [0, ''],
+                [0, ''], [0, '']
+            ],
+            [
+                [0, ''], [0, ''],
+                [0, ''], [0, ''],
+                [0, ''], [0, ''],
+                [0, ''], [0, ''],
+                [0, ''], [0, '']
+            ],
+            [
+                [0, ''], [0, ''],
+                [0, ''], [0, ''],
+                [0, ''], [0, ''],
+                [0, ''], [0, ''],
+                [0, ''], [0, '']
+            ],
+            [
+                [1, 'cyan'], [1, 'cyan'],
+                [1, 'cyan'], [1, 'cyan'],
+                [1, 'cyan'], [0, ''],
+                [1, 'cyan'], [1, 'cyan'],
+                [1, 'cyan'], [1, 'cyan']
+            ],
+            [
+                [1, 'cyan'], [1, 'cyan'],
+                [1, 'cyan'], [1, 'cyan'],
+                [1, 'cyan'], [0, ''],
+                [1, 'cyan'], [1, 'cyan'],
+                [1, 'cyan'], [1, 'cyan']
+            ],
+            [
+                [1, 'cyan'], [1, 'cyan'],
+                [1, 'cyan'], [1, 'cyan'],
+                [1, 'cyan'], [0, ''],
+                [1, 'cyan'], [1, 'cyan'],
+                [1, 'cyan'], [1, 'cyan']
+            ],
+            [
+                [1, 'cyan'], [1, 'cyan'],
+                [1, 'cyan'], [1, 'cyan'],
+                [1, 'cyan'], [0, ''],
+                [1, 'cyan'], [1, 'cyan'],
+                [1, 'cyan'], [1, 'cyan']
+            ]
+        ];
+        // let empty = [
+        //     [
+        //         [0, ''], [0, ''],
+        //         [0, ''], [0, ''],
+        //         [0, ''], [0, ''],
+        //         [0, ''], [0, ''],
+        //         [0, ''], [0, '']
+        //     ],
+        //     [
+        //         [0, ''], [0, ''],
+        //         [0, ''], [0, ''],
+        //         [0, ''], [0, ''],
+        //         [0, ''], [0, ''],
+        //         [0, ''], [0, '']
+        //     ],
+        //     [
+        //         [0, ''], [0, ''],
+        //         [0, ''], [0, ''],
+        //         [0, ''], [0, ''],
+        //         [0, ''], [0, ''],
+        //         [0, ''], [0, '']
+        //     ],
+        //     [
+        //         [0, ''], [0, ''],
+        //         [0, ''], [0, ''],
+        //         [0, ''], [0, ''],
+        //         [0, ''], [0, ''],
+        //         [0, ''], [0, '']
+        //     ],
+        //     [
+        //         [0, ''], [0, ''],
+        //         [0, ''], [0, ''],
+        //         [0, ''], [0, ''],
+        //         [0, ''], [0, ''],
+        //         [0, ''], [0, '']
+        //     ],
+        //     [
+        //         [0, ''], [0, ''],
+        //         [0, ''], [0, ''],
+        //         [0, ''], [0, ''],
+        //         [0, ''], [0, ''],
+        //         [0, ''], [0, '']
+        //     ],
+        //     [
+        //         [0, ''], [0, ''],
+        //         [0, ''], [0, ''],
+        //         [0, ''], [0, ''],
+        //         [0, ''], [0, ''],
+        //         [0, ''], [0, '']
+        //     ],
+        //     [
+        //         [0, ''], [0, ''],
+        //         [0, ''], [0, ''],
+        //         [0, ''], [0, ''],
+        //         [0, ''], [0, ''],
+        //         [0, ''], [0, '']
+        //     ],
+        //     [
+        //         [0, ''], [0, ''],
+        //         [0, ''], [0, ''],
+        //         [0, ''], [0, ''],
+        //         [0, ''], [0, ''],
+        //         [0, ''], [0, '']
+        //     ],
+        //     [
+        //         [0, ''], [0, ''],
+        //         [0, ''], [0, ''],
+        //         [0, ''], [0, ''],
+        //         [0, ''], [0, ''],
+        //         [0, ''], [0, '']
+        //     ],
+        //     [
+        //         [0, ''], [0, ''],
+        //         [0, ''], [0, ''],
+        //         [0, ''], [0, ''],
+        //         [0, ''], [0, ''],
+        //         [0, ''], [0, '']
+        //     ],
+        //     [
+        //         [0, ''], [0, ''],
+        //         [0, ''], [0, ''],
+        //         [0, ''], [0, ''],
+        //         [0, ''], [0, ''],
+        //         [0, ''], [0, '']
+        //     ],
+        //     [
+        //         [0, ''], [0, ''],
+        //         [0, ''], [0, ''],
+        //         [0, ''], [0, ''],
+        //         [0, ''], [0, ''],
+        //         [0, ''], [0, '']
+        //     ],
+        //     [
+        //         [0, ''], [0, ''],
+        //         [0, ''], [0, ''],
+        //         [0, ''], [0, ''],
+        //         [0, ''], [0, ''],
+        //         [0, ''], [0, '']
+        //     ],
+        //     [
+        //         [0, ''], [0, ''],
+        //         [0, ''], [0, ''],
+        //         [0, ''], [0, ''],
+        //         [0, ''], [0, ''],
+        //         [0, ''], [0, '']
+        //     ],
+        //     [
+        //         [0, ''], [0, ''],
+        //         [0, ''], [0, ''],
+        //         [0, ''], [0, ''],
+        //         [0, ''], [0, ''],
+        //         [0, ''], [0, '']
+        //     ],
+        //     [
+        //         [0, ''], [0, ''],
+        //         [0, ''], [0, ''],
+        //         [0, ''], [0, ''],
+        //         [0, ''], [0, ''],
+        //         [0, ''], [0, '']
+        //     ],
+        //     [
+        //         [0, ''], [0, ''],
+        //         [0, ''], [0, ''],
+        //         [0, ''], [0, ''],
+        //         [0, ''], [0, ''],
+        //         [0, ''], [0, '']
+        //     ],
+        //     [
+        //         [0, ''], [0, ''],
+        //         [0, ''], [0, ''],
+        //         [0, ''], [0, ''],
+        //         [0, ''], [0, ''],
+        //         [0, ''], [0, '']
+        //     ],
+        //     [
+        //         [0, ''], [0, ''],
+        //         [0, ''], [0, ''],
+        //         [0, ''], [0, ''],
+        //         [0, ''], [0, ''],
+        //         [0, ''], [0, '']
+        //     ],
+        //     [
+        //         [0, ''], [0, ''],
+        //         [0, ''], [0, ''],
+        //         [0, ''], [0, ''],
+        //         [0, ''], [0, ''],
+        //         [0, ''], [0, '']
+        //     ],
+        //     [
+        //         [0, ''], [0, ''],
+        //         [0, ''], [0, ''],
+        //         [0, ''], [0, ''],
+        //         [0, ''], [0, ''],
+        //         [0, ''], [0, '']
+        //     ]
+        // ];
+        game.field.gameArea = almostFull;
     });
 </script>
 </body>
