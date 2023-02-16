@@ -91,27 +91,26 @@
         event.preventDefault();
     }, true);
 
+	function runGame(s) {
+		clearInterval(intervalId);
+		intervalId = setInterval(function(){
+			levelUp = game.play("auto")
+			if (levelUp) {
+				speed = 1000 * Math.pow((0.8 - (game.level - 1) * 0.007), game.level - 1);
+				runGame(speed);
+			}
+		}, s)
+		
+	}
+
     button.addEventListener("click", function () {
         gameActive = !gameActive;
         clearInterval(intervalId);
         if (gameActive) {
             button.innerText = "Pause";
-            // console.log(`top of if block`)
-            intervalId = setInterval(function () {
-                // console.log(`speed is ${speed}`)
-                levelUp = game.play("auto");
-                // console.log(`level up is ${levelUp}`)
-                if (levelUp) {
-                    console.log("leveling up")
-                    // levelUp = false;
-                    speed = 1000 * Math.pow((0.8 - (game.level - 1) * 0.007), game.level - 1);
-                }
-            }, speed);
-            // console.log(`bottom of if block`)
-        }
-        if (!gameActive) {
+				runGame(speed);
+        } else {
             button.innerText = "Play";
-            // clearInterval(intervalId);
         }
     });
 
