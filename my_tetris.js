@@ -105,7 +105,6 @@ class Tetromino {
     drawTetromino(yPos = this.yPos, xPos = this.xPos, ghost = false) {
         // console.log("drawing tetromino")
         if (ghost) {
-            // console.log(`drawing ghost at ${yPos} ${xPos}`)
             currentShape.forEach((row, y) => {
                 row.forEach((cellValue, x) => {
                     if (cellValue === 1) {
@@ -116,32 +115,31 @@ class Tetromino {
                     }
                 });
             });
-            return;
-        }
-        // console.log(`drawing tetromino at ${yPos} ${xPos}`)
-        currentShape.forEach((row, y) => {
-            row.forEach((cellValue, x) => {
-                if (cellValue === 1) {
-                    context.beginPath()
-                    context.fillStyle = currentColor;
-                    context.roundRect((xPos + x) * CELL_SIZE, (yPos + y) * CELL_SIZE, CELL_SIZE, CELL_SIZE, [3]);
-                    context.fill()
-                    context.beginPath()
-                    context.strokeStyle = "gainsboro";
-                    context.roundRect((xPos + x) * CELL_SIZE, (yPos + y) * CELL_SIZE, CELL_SIZE, CELL_SIZE, 0);
-                    context.stroke()
-                }
+        } else {
+            currentShape.forEach((row, y) => {
+                row.forEach((cellValue, x) => {
+                    if (cellValue === 1) {
+                        context.beginPath()
+                        context.fillStyle = currentColor;
+                        context.roundRect((xPos + x) * CELL_SIZE, (yPos + y) * CELL_SIZE, CELL_SIZE, CELL_SIZE, [3]);
+                        context.fill()
+                        context.beginPath()
+                        context.strokeStyle = "gainsboro";
+                        context.roundRect((xPos + x) * CELL_SIZE, (yPos + y) * CELL_SIZE, CELL_SIZE, CELL_SIZE, 0);
+                        context.stroke()
+                    }
+                });
             });
-        });
-        // debugging: rotation, fills cells around tetromino
-        // currentShape.forEach((row, y) => {
-        //     row.forEach((cellValue, x) => {
-        //         if (cellValue === 0) {
-        //             context.fillStyle = "black";
-        //             context.fillRect((this.xPos + x) * CELL_SIZE, (this.yPos + y) * CELL_SIZE, CELL_SIZE, CELL_SIZE);
-        //         }
-        //     });
-        // });
+            // debugging: rotation, fills cells around tetromino
+            // currentShape.forEach((row, y) => {
+            //     row.forEach((cellValue, x) => {
+            //         if (cellValue === 0) {
+            //             context.fillStyle = "black";
+            //             context.fillRect((this.xPos + x) * CELL_SIZE, (this.yPos + y) * CELL_SIZE, CELL_SIZE, CELL_SIZE);
+            //         }
+            //     });
+            // });
+        }
     }
 }
 
@@ -153,14 +151,32 @@ class Field {
 
     stackNeedsUpdate = false;
     tetrominoOrientation = 0;
-    ghostXPos = 0;
-    ghostYPos = 0;
+
+    drawStack() {
+        // console.log("drawing current stack")
+        context.fillStyle = "whitesmoke";
+        context.fillRect(0, 0, columns * CELL_SIZE, rows * CELL_SIZE);
+        this.gameArea.forEach((row, y) =>
+            row.forEach((cell, x) => {
+                if (cell[0] > 0) {
+                    context.beginPath()
+                    context.fillStyle = cell[1];
+                    context.roundRect(x * CELL_SIZE, y * CELL_SIZE, CELL_SIZE, CELL_SIZE, [3]);
+                    context.fill()
+                    context.beginPath()
+                    context.strokeStyle = "gainsboro";
+                    context.roundRect(x * CELL_SIZE, y * CELL_SIZE, CELL_SIZE, CELL_SIZE, 0);
+                    context.stroke()
+                }
+            })
+        );
+    }
 
     updateField() {
         this.drawStack();
         this.tetromino.drawTetromino();
-        this.calculateGhostPosition();
-        this.tetromino.drawTetromino(this.ghostYPos, this.ghostXPos, true);
+        let ghostPosition = this.calculateGhostPosition();
+        this.tetromino.drawTetromino(ghostPosition[0], ghostPosition[1], true);
         if (this.stackNeedsUpdate) {
             this.updateStack();
         }
@@ -180,234 +196,166 @@ class Field {
         this.tetrominoOrientation = 0;
     }
 
-    drawStack() {
-        // console.log("drawing current stack")
-        context.fillStyle = "whitesmoke";
-        context.fillRect(0, 0, columns * CELL_SIZE, rows * CELL_SIZE);
-        this.gameArea.forEach((row, y) =>
-            row.forEach((cell, x) => {
-                if (cell[0] > 0) {
-                    // context.fillStyle = cell[1];
-                    // context.fillRect(x * CELL_SIZE, y * CELL_SIZE, CELL_SIZE, CELL_SIZE);
-                    context.beginPath()
-                    context.fillStyle = cell[1];
-                    context.roundRect(x * CELL_SIZE, y * CELL_SIZE, CELL_SIZE, CELL_SIZE, [3]);
-                    context.fill()
-                    context.beginPath()
-                    context.strokeStyle = "gainsboro";
-                    context.roundRect(x * CELL_SIZE, y * CELL_SIZE, CELL_SIZE, CELL_SIZE, 0);
-                    context.stroke()
-                }
-            })
-        );
-    }
-
-    firstOrLastSolidBlockOnSide(side) {
-        let position = 0;
+    whereIsSolidOnSide(side) {
+        let pos;
         switch (side) {
             case "left":
-                // console.log("solid left")
-                position = currentShape[0].length;
+                pos = currentShape[0].length;
                 for (let i = 0; i < currentShape.length; i++) {
-                    let positionOfSolidBlock = currentShape[i].indexOf(1);
-                    if (positionOfSolidBlock < position && positionOfSolidBlock >= 0) {
-                        position = positionOfSolidBlock;
+                    let solidPos = currentShape[i].indexOf(1);
+                    if (solidPos < pos && solidPos >= 0) {
+                        pos = solidPos;
                     }
                 }
                 break;
             case "right":
-                // console.log("solid right")
+                pos = 0;
                 for (let i = 0; i < currentShape.length; i++) {
-                    let positionOfSolidBlock = currentShape[i].lastIndexOf(1);
-                    if (positionOfSolidBlock > position) {
-                        position = positionOfSolidBlock;
+                    let solidPos = currentShape[i].lastIndexOf(1);
+                    if (solidPos > pos) {
+                        pos = solidPos;
                     }
                 }
                 break;
             case "down":
-                // console.log("solid down")
+                pos = 0;
                 for (let i = 0; i < currentShape.length; i++) {
-                    if (currentShape[i].includes(1) && i > position) {
-                        position = i;
+                    if (currentShape[i].includes(1) && i > pos) {
+                        pos = i;
                     }
                 }
                 break;
             case "up":
+                pos = currentShape.length;
                 for (let i = 0; i < currentShape.length; i++) {
-                    if (currentShape[i].includes(1) && i < position) {
-                        position = i;
+                    if (currentShape[i].includes(1) && i < pos) {
+                        pos = i;
                     }
                 }
         }
-        // console.log(`for firstOrLastSolid returning ${position}`)
-        return position;
+        // console.log(`solid index is ${pos}`)
+        return pos;
     }
 
-    isThereWallConflict(move, position) {
-        switch (move) {
-            case "left":
-                // console.log(`position ${position}, firstOrLast ${this.firstOrLastSolidBlockOnSide("left")}`)
-                return position + this.firstOrLastSolidBlockOnSide("left") < 0;
-            case "right":
-                return position + this.firstOrLastSolidBlockOnSide("right") >= columns;
-            case "down":
-                return position + this.firstOrLastSolidBlockOnSide("down") >= rows;
-            case "up":
-                return position + this.firstOrLastSolidBlockOnSide("up") < 0;
-            case "all":
-                let leftConflict = this.isThereWallConflict("left", this.tetromino.xPos);
-                let rightConflict = this.isThereWallConflict("right", this.tetromino.xPos);
-                let downConflict = this.isThereWallConflict("down", this.tetromino.yPos);
-                // console.log(`wall conflict returning ${leftConflict || rightConflict || downConflict}`)
-                return leftConflict || rightConflict || downConflict;
-            default:
-                return true;
+    isPositionValid(yPos = this.tetromino.yPos, xPos = this.tetromino.xPos) {
+        let colStart = xPos + this.whereIsSolidOnSide("left");
+        let colEnd = xPos + this.whereIsSolidOnSide("right");
+        let rowStart = yPos + this.whereIsSolidOnSide("up");
+        let rowEnd = yPos + this.whereIsSolidOnSide("down");
+        // checks that the tetromino is within game area
+        if (colStart < 0 || colEnd >= columns || rowEnd >= rows) {
+            return false;
         }
-    }
-
-    isThereStackConflict(yPos, xPos) {
-        for (let y = 0; y < currentShape.length; y++) {
-            // console.log(y)
-            for (let x = 0; x < currentShape[0].length; x++) {
-                // console.log(x)
-                // console.log(`checking (${y},${x}) `)
-                // if (currentShape[y][x] === 1) {
-                //     console.log(`found 1 in tetromino ${y} ${x}`)
-                // }
-                // console.log(`occupied stack ${this.gameArea[yPos + y][xPos + x][0] === 1}, checked ${yPos + y} ${xPos + x}`)
-                if (currentShape[y][x] === 1) {
-                    let stackY = yPos + y < rows && yPos + y >= 0;
-                    let stackX = xPos + x < columns && xPos + x >= 0;
-                    if ((stackX && stackY) && this.gameArea[yPos + y][xPos + x][0] === 1) {
-                        // console.log(`checking ${this.gameArea[yPos + y][xPos + x][0]} for ${y} ${x}`)
-                        return true;
+        // checks that the tetromino would not be on a cell that's already occupied
+        if (yPos >= 0 && (yPos + this.whereIsSolidOnSide("down")) < rows) {
+            for (let y = rowStart, y_ = rowStart - yPos; y <= rowEnd; y++, y_++) {
+                for (let x = colStart, x_ = colStart - xPos; x <= colEnd; x++, x_++) {
+                    if (y < rows && x < columns && x >= 0) {
+                        if (this.gameArea[y][x][0] === 1 && currentShape[y_][x_] === 1) {
+                            return false;
+                        }
                     }
-                    // console.log(`found stack conflict`);
                 }
             }
         }
-        return false;
+        return true;
     }
 
-    isPositionChangeValid(move, yPos = this.tetromino.yPos, xPos = this.tetromino.xPos) {
-        let potentialPosition;
-        let wallConflict = false;
-        let stackConflict = false;
-        switch (move) {
-            case "left":
-                potentialPosition = xPos - 1;
-                wallConflict = this.isThereWallConflict("left", potentialPosition);
-                stackConflict = this.isThereStackConflict(yPos, potentialPosition);
-                if (!wallConflict && !stackConflict) {
-                    return true;
-                }
-                break;
-            case "right":
-                potentialPosition = xPos + 1;
-                wallConflict = this.isThereWallConflict("right", potentialPosition);
-                stackConflict = this.isThereStackConflict(yPos, potentialPosition);
-                if (!wallConflict && !stackConflict) {
-                    return true;
-                }
-                break;
-            case "down":
-                potentialPosition = yPos + 1;
-                wallConflict = this.isThereWallConflict("down", potentialPosition);
-                stackConflict = this.isThereStackConflict(potentialPosition, xPos);
-                if (!wallConflict && !stackConflict) {
-                    return true;
-                }
-                break;
-            case "up":
-                potentialPosition = yPos - 1;
-                wallConflict = this.isThereWallConflict("up", potentialPosition);
-                stackConflict = this.isThereStackConflict(potentialPosition, xPos);
-                if (!wallConflict && !stackConflict) {
-                    return true;
-                }
-                break;
-            case "rotate":
-                wallConflict = this.isThereWallConflict("all");
-                stackConflict = this.isThereStackConflict(yPos, xPos);
-                if (!wallConflict && !stackConflict) {
-                    return true;
-                }
+    calculateGhostPosition() {
+        // the ghost tetromino is simply the tetromino as if it was hard-dropped
+        return this.calculateHardDrop();
+    }
+
+    calculateHardDrop(yPos = this.tetromino.yPos, xPos = this.tetromino.xPos) {
+        let validPosition = true;
+        let finalYPos = yPos;
+        let finalXPos = xPos;
+        while (validPosition) {
+            validPosition = this.isPositionValid(finalYPos + 1, finalXPos)
+            if (validPosition) {
+                finalYPos++;
+            }
         }
-        return false;
+        return [finalYPos, finalXPos]
     }
 
-    calculateRotation(move) {
+    calculateRotation(direction) {
         let previousOrientation = currentShape;
         let isNewOrientationValid;
-        let canKickWall;
-        switch (move) {
+        let wallKickPossible;
+        let orientationChange = 0;
+        switch (direction) {
             case "clockwise turn":
                 currentShape = currentShape[0].map((value, index) => currentShape.map(row => row[index]).reverse());
+                orientationChange++;
                 break;
             case "counterclockwise turn":
                 currentShape = currentShape[0].map((value, index) => currentShape.map(row => row[row.length - index - 1]));
+                orientationChange--;
         }
-        isNewOrientationValid = this.isPositionChangeValid("rotate");
+        // console.log(`yPos is ${this.tetromino.yPos}`)
+        isNewOrientationValid = this.isPositionValid();
         if (!isNewOrientationValid) {
-            canKickWall = this.testWallKick(move);
-            // console.log(`xPosition before kick ${this.tetromino.xPos}`)
-            if (!canKickWall) {
+            console.log("position change not valid, testing wall kick")
+            wallKickPossible = this.canKickWall();
+            if (!wallKickPossible) {
+                // console.log("cannot kick wall")
                 currentShape = previousOrientation;
+                orientationChange = 0;
             }
         }
+        this.tetrominoOrientation += orientationChange;
     }
 
-    testWallKick() {
-        let conflictLeft = this.isThereWallConflict("left", this.tetromino.xPos);
-        let conflictRight = this.isThereWallConflict("right", this.tetromino.xPos);
-        let conflictDown = this.isThereWallConflict("down", this.tetromino.yPos);
-        switch (true) {
-            case conflictLeft:
-                if (currentColor === "cyan" && this.tetromino.xPos === -2) {
-                    this.tetromino.xPos += 1;
-                }
-                if (this.isPositionChangeValid("right")) {
-                    this.tetromino.xPos += 1;
-
-                }
+    canKickWall() {
+        // need to fix cyan wall kicks
+        let conflictLeft = !this.isPositionValid(this.tetromino.yPos, this.tetromino.xPos - 1);
+        let conflictRight = !this.isPositionValid(this.tetromino.yPos, this.tetromino.xPos + 1);
+        let conflictDown = !this.isPositionValid(this.tetromino.yPos + 1, this.tetromino.xPos);
+        let conflictUp = !this.isPositionValid(this.tetromino.yPos - 1, this.tetromino.xPos);
+        if (conflictLeft && conflictRight && conflictDown && conflictUp) {
+            return false;
+        }
+        if (conflictLeft) {
+            if (!conflictRight) {
+                this.tetromino.xPos += 1;
                 return true;
-            case conflictRight:
-                if (currentColor === "cyan" && this.tetromino.xPos === 8) {
-                    this.tetromino.xPos -= 1;
-                }
-                if (this.isPositionChangeValid("left")) {
-                    this.tetromino.xPos -= 1;
-                }
+            }
+        }
+        if (conflictRight) {
+            if (!conflictLeft) {
+                this.tetromino.xPos -= 1;
                 return true;
-            case conflictDown:
-                if (currentColor === "cyan" && this.tetromino.yPos === 20) {
-                    this.tetromino.yPos -= 1;
-                }
-                if (this.isPositionChangeValid("up")) {
-                    this.tetromino.yPos -= 1;
-                }
+            }
+        }
+        if (conflictUp) {
+            if (!conflictDown) {
+                this.tetromino.yPos += 1;
                 return true;
+            }
+        }
+        if (conflictDown) {
+            if (!conflictUp) {
+                this.tetromino.yPos -= 1;
+                return true;
+            }
         }
         return false;
     }
 
     updateTetrominoPosition(key) {
-        let atTopOfStack = this.tetromino.yPos + this.firstOrLastSolidBlockOnSide("down") === rows - 1;
+        let yPos = this.tetromino.yPos;
+        let xPos = this.tetromino.xPos;
         let moveValid;
-        let potentialTurn;
         switch (key) {
-            // case "customUp":
-            // case "ArrowUp":
-            //     this.tetromino.yPos -= 1;
-            //     break;
             case "ArrowLeft":
-                moveValid = this.isPositionChangeValid("left");
+                moveValid = this.isPositionValid(yPos, xPos - 1);
                 if (moveValid) {
                     this.tetromino.xPos -= 1;
                 }
                 break;
             case "ArrowRight":
-                moveValid = this.isPositionChangeValid("right");
+                moveValid = this.isPositionValid(yPos, xPos + 1);
                 if (moveValid) {
                     this.tetromino.xPos += 1;
                 }
@@ -429,20 +377,14 @@ class Field {
                 console.log("hold")
                 break;
             case "ArrowDown":
-                moveValid = this.isPositionChangeValid("down");
-                if (moveValid) {
-                    this.tetromino.yPos += 1;
-                }
-                break;
             case "auto":
-                moveValid = this.isPositionChangeValid("down");
+                moveValid = this.isPositionValid(yPos + 1, xPos);
                 if (moveValid) {
                     this.tetromino.yPos += 1;
                 } else {
-                    atTopOfStack = true;
+                    this.stackNeedsUpdate = true;
                 }
         }
-        this.stackNeedsUpdate = atTopOfStack;
     }
 
     checkRows() {
@@ -457,57 +399,18 @@ class Field {
                 }
             }
             if (row2clear) {
-                // console.log(`found complete row at index ${y}`)
-                // console.log(`before ${this.gameArea}`)
                 this.gameArea.splice(y, 1);
                 this.gameArea.unshift(Array(columns).fill([0, ""]));
-                // console.log(`after ${this.gameArea}`)
                 clearedRows++;
-                // console.log(this.gameArea)
             }
         }
-
         let tetris = Math.floor(clearedRows / 4);
         clearedRows = clearedRows % 4;
         let triple = Math.floor(clearedRows / 3);
         clearedRows = clearedRows % 3;
         let double = Math.floor(clearedRows / 2);
         let single = clearedRows % 2;
-        // return {'tetris': tetris, 'triple': triple, 'double': double, 'single': single};
-
         return (tetris * 8) + (triple * 5) + (double * 3) + (single);
-    }
-
-    calculateGhostPosition() {
-        // console.log("ghost")
-        let finalPos = this.calculateHardDrop();
-        // console.log(finalPos)
-        this.ghostYPos = finalPos[0];
-        this.ghostXPos = finalPos[1];
-        // this.ghostXPos = this.tetromino.xPos;
-        // this.ghostYPos = this.tetromino.yPos;
-        // let validGhostPosition = true;
-        // while (validGhostPosition) {
-        //     // console.log("in while loop")
-        //     validGhostPosition = this.calculateHardDrop(this.ghostYPos, this.ghostXPos);
-        //     // console.log(validGhostPosition)
-        //     if (validGhostPosition) {
-        //         this.ghostYPos++;
-        //     }
-        // }
-    }
-
-    calculateHardDrop(yPos = this.tetromino.yPos, xPos = this.tetromino.xPos) {
-        let validPosition = true;
-        let finalYPos = yPos;
-        let finalXPos = xPos;
-        while (validPosition) {
-            validPosition = this.isPositionChangeValid("down", finalYPos, finalXPos)
-            if (validPosition) {
-                finalYPos++;
-            }
-        }
-        return [finalYPos, finalXPos]
     }
 }
 
@@ -518,6 +421,7 @@ class Game {
         rows = ctx.canvas.height / CELL_SIZE;
         this.field = new Field(context);
     }
+
     levelPoints = 0;
     level = 1;
     points = 0;
@@ -533,16 +437,11 @@ class Game {
         this.field.updateField();
         let clearedRows = this.field.checkRows();
         this.levelPoints += clearedRows;
-        // console.log(this.levelPoints)
         this.points += clearedRows * 100 * this.level;
-        // console.log(this.points);
-        // console.log(`score is ${this.score}`)
         if (this.levelPoints >= (5 * this.level)) {
             this.level++;
-            // console.log(`score high enough, level is ${this.level}. returning true`)
             return true;
         }
         return false;
-        // console.log(`score is ${this.score}`)
     }
 }
