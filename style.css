@@ -1,3 +1,5 @@
-.area {
-    background-color: lightgray;
+body {
+    background-color: black;
+    background-image:  radial-gradient(slategray 0.1px, lightgray 1px);
+    background-size: 20px 20px;
 }
