@@ -12,51 +12,63 @@
     <link href="style.css" rel="stylesheet">
     <script src="my_tetris.js"></script>
 </head>
+<br>
 <body>
-<h1>Lorem ipsum</h1>
 <div class="container px4">
     <div class="row g-6">
-        <div class="col-md" id="leftCol">
-            <div class="border">
-                <p>
-                    Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore
-                    et dolore magna aliqua
-                </p>
-                <div>
-                    <button type="button" class="btn btn-lg btn-secondary" id="playButton" data-bs-toggle="button"
-                            autocomplete="off">
-                        Start
-                    </button>
+        <div class="col-4" id="leftCol">
+            <div class="row g-6" id="logoArea">
+                <a href="#">
+                    <img class="img-fluid mx-auto d-block" style="max-width: 90%; height: auto;"
+                         src="resources/static/images/The_Tetris_Company_logo_2019.png" alt="">
+                </a>
+            </div>
+            <div class="row g-6" id="buttonsArea">
+                <button type="button" class="btn btn-lg btn-success mx-auto d-block" id="playButton"
+                        data-bs-toggle="button"
+                        autocomplete="off">
+                    Start
+                </button>
+            </div>
+            <div class="row g-6" id="scoreAndLevelArea">
+                <div class="col-sm">
+                    level
                 </div>
-                <div>
-                    <button type="button" class="btn btn-lg btn-secondary" id="switch" data-bs-toggle="button"
-                            autocomplete="off">
-                        Tetromino
-                    </button>
+                <div class="col-sm">
+                    score
                 </div>
-                <div>
-                    <button type="button" class="btn btn-lg btn-secondary" id="field" data-bs-toggle="button"
-                            autocomplete="off">
-                        Field
-                    </button>
-                </div>
-                <p>
-                    Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo
-                    consequat
-                </p>
+            </div>
+            <div class="row g-6" id="holdArea">
+                hold
             </div>
         </div>
-        <div class="col-md" id="rightCol">
+        <div class="col-8" id="rightCol">
             <div class="border">
                 <canvas id="canvas" width="200" height="440">
                 </canvas>
             </div>
         </div>
     </div>
+    <br>
     <div class="row">
         <div class="col" id="bottomCol">
-            <div class="border">
-                Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur
+            instructions
+        </div>
+    </div>
+    <br>
+    <div class="row">
+        <div class="col" id="devCol">
+            <div>
+                <button type="button" class="btn btn-lg btn-secondary" id="switch" data-bs-toggle="button"
+                        autocomplete="off">
+                    Tetromino
+                </button>
+            </div>
+            <div>
+                <button type="button" class="btn btn-lg btn-secondary" id="field" data-bs-toggle="button"
+                        autocomplete="off">
+                    Field
+                </button>
             </div>
         </div>
     </div>
@@ -73,6 +85,18 @@
     let speed = 1000;
     let levelUp = false;
 
+    function changePlayButton() {
+        if (gameActive) {
+            button.innerText = "Pause";
+            button.classList.remove("btn-success")
+            button.classList.add("btn-danger")
+        } else {
+            button.innerText = "Continue";
+            button.classList.remove("btn-danger")
+            button.classList.add("btn-success")
+        }
+    }
+
     window.addEventListener('keydown', function (event) {
         if (event.defaultPrevented) {
             return;
@@ -82,7 +106,7 @@
             if (key === "Escape" || key === "F1") {
                 gameActive = false;
                 clearInterval(intervalId)
-                button.innerText = "Play";
+                changePlayButton();
             } else {
                 game.play(key);
             }
@@ -91,26 +115,26 @@
         event.preventDefault();
     }, true);
 
-	function runGame(s) {
-		clearInterval(intervalId);
-		intervalId = setInterval(function(){
-			levelUp = game.play("auto")
-			if (levelUp) {
-				speed = 1000 * Math.pow((0.8 - (game.level - 1) * 0.007), game.level - 1);
-				runGame(speed);
-			}
-		}, s)
-		
-	}
+    function runGame(intervalSpeed) {
+        clearInterval(intervalId);
+        intervalId = setInterval(function () {
+            levelUp = game.play("auto")
+            if (levelUp) {
+                speed = 1000 * Math.pow((0.8 - (game.level - 1) * 0.007), game.level - 1);
+                runGame(speed);
+            }
+        }, intervalSpeed)
+
+    }
 
     button.addEventListener("click", function () {
         gameActive = !gameActive;
         clearInterval(intervalId);
         if (gameActive) {
-            button.innerText = "Pause";
-				runGame(speed);
+            changePlayButton();
+            runGame(speed);
         } else {
-            button.innerText = "Play";
+            changePlayButton();
         }
     });
 
