@@ -110,33 +110,32 @@ class Tetromino {
     }
 
     setNextTetromino(useHeld = false) {
-        // let nextTetromino = this.nextTetrominoes.shift();
-        this.currentTetromino = useHeld ? this.heldTetromino : this.tetrominoes[this.nextTetrominoes.shift()];
+        let previousHeldTetromino;
+        if (useHeld) {
+            previousHeldTetromino = this.heldTetromino;
+            this.heldTetromino = this.currentTetromino;
+        }
+        this.currentTetromino = useHeld ? previousHeldTetromino: this.tetrominoes[this.nextTetrominoes.shift()];
         this.xPos = this.currentTetromino.xStart;
         this.yPos = this.currentTetromino.yStart;
         currentShape = this.currentTetromino.shape;
         currentColor = this.currentTetromino.color;
-        if (useHeld) {
-            this.heldTetromino = this.tetrominoes[this.nextTetrominoes.shift()];
+        if (!useHeld) {
+            this.nextTetrominoes.push(this.selectRandomTetromino());
         }
-        this.nextTetrominoes.push(this.selectRandomTetromino());
     }
 
     holdTetromino() {
-        console.log(`trying to hold. held is ${this.heldTetromino ? this.heldTetromino.color : undefined}`)
         if (this.canHoldTetromino) {
             if (this.heldTetromino === undefined) {
                 this.heldTetromino = this.currentTetromino;
                 this.setNextTetromino();
-                console.log(`holding, held is ${this.heldTetromino.color}`)
             } else {
-                console.log("swapping held for current")
                 this.setNextTetromino(true);
             }
             this.canHoldTetromino = false;
         }
     }
-
 
     selectTetromino() {
         let tetrominoNames = Object.keys(this.tetrominoes);
