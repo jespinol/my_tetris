@@ -1,7 +1,9 @@
-const CELL_SIZE = 20;
-let columns;
-let rows;
-let context;
+const columns = 10;
+const rows = 22;
+let cellSize;
+let ctxGameArea;
+let ctxNextArea;
+let ctxHoldArea;
 let currentShape;
 let currentColor;
 
@@ -85,16 +87,56 @@ class Tetromino {
     //         yStart: -2
     //     }
     // };
+    currentTetromino;
+    heldTetromino;
+    canHoldTetromino = true;
 
     constructor() {
-        this.tetromino = this.selectTetromino();
-        this.xPos = this.tetromino.xStart;
-        this.yPos = this.tetromino.yStart;
-        this.currentShape = this.tetromino.shape;
-        currentShape = this.tetromino.shape;
-        this.currentColor = this.tetromino.color;
-        currentColor = this.tetromino.color;
+        this.nextTetrominoes = this.initTetrominoes();
+        this.setNextTetromino();
     }
+
+    selectRandomTetromino() {
+        let tetrominoNames = Object.keys(this.tetrominoes);
+        return tetrominoNames[Math.floor(Math.random() * tetrominoNames.length)];
+    }
+
+    initTetrominoes() {
+        let tetrominoList = [];
+        for (let i = 0; i < 6; i++) {
+            tetrominoList[i] = this.selectRandomTetromino();
+        }
+        return tetrominoList;
+    }
+
+    setNextTetromino(useHeld = false) {
+        // let nextTetromino = this.nextTetrominoes.shift();
+        this.currentTetromino = useHeld ? this.heldTetromino : this.tetrominoes[this.nextTetrominoes.shift()];
+        this.xPos = this.currentTetromino.xStart;
+        this.yPos = this.currentTetromino.yStart;
+        currentShape = this.currentTetromino.shape;
+        currentColor = this.currentTetromino.color;
+        if (useHeld) {
+            this.heldTetromino = this.tetrominoes[this.nextTetrominoes.shift()];
+        }
+        this.nextTetrominoes.push(this.selectRandomTetromino());
+    }
+
+    holdTetromino() {
+        console.log(`trying to hold. held is ${this.heldTetromino ? this.heldTetromino.color : undefined}`)
+        if (this.canHoldTetromino) {
+            if (this.heldTetromino === undefined) {
+                this.heldTetromino = this.currentTetromino;
+                this.setNextTetromino();
+                console.log(`holding, held is ${this.heldTetromino.color}`)
+            } else {
+                console.log("swapping held for current")
+                this.setNextTetromino(true);
+            }
+            this.canHoldTetromino = false;
+        }
+    }
+
 
     selectTetromino() {
         let tetrominoNames = Object.keys(this.tetrominoes);
@@ -102,40 +144,58 @@ class Tetromino {
         return this.tetrominoes[randomTetromino];
     }
 
-    drawTetromino(yPos = this.yPos, xPos = this.xPos, ghost = false) {
+    drawSideTetromino(location, shape, color) {
+        let size = cellSize / 2;
+        shape.forEach((row, y) => {
+            row.forEach((cellValue, x) => {
+                if (cellValue === 1) {
+                    location.beginPath()
+                    location.fillStyle = color;
+                    location.roundRect(x * size, y * size, size, size, [3]);
+                    location.fill()
+                    location.beginPath()
+                    location.strokeStyle = "gainsboro";
+                    location.roundRect(x * size, y * size, size, size, 0);
+                    location.stroke()
+                }
+            });
+        });
+    }
+
+    drawGameTetromino(yPos = this.yPos, xPos = this.xPos, ghost = false, location = ctxGameArea, shape = currentShape) {
         // console.log("drawing tetromino")
         if (ghost) {
-            currentShape.forEach((row, y) => {
+            shape.forEach((row, y) => {
                 row.forEach((cellValue, x) => {
                     if (cellValue === 1) {
-                        context.beginPath()
-                        context.strokeStyle = "gray";
-                        context.roundRect((xPos + x) * CELL_SIZE, (yPos + y) * CELL_SIZE, CELL_SIZE, CELL_SIZE, [3]);
-                        context.stroke()
+                        location.beginPath()
+                        location.strokeStyle = "gray";
+                        location.roundRect((xPos + x) * cellSize, (yPos + y) * cellSize, cellSize, cellSize, [3]);
+                        location.stroke()
                     }
                 });
             });
         } else {
-            currentShape.forEach((row, y) => {
+            shape.forEach((row, y) => {
                 row.forEach((cellValue, x) => {
                     if (cellValue === 1) {
-                        context.beginPath()
-                        context.fillStyle = currentColor;
-                        context.roundRect((xPos + x) * CELL_SIZE, (yPos + y) * CELL_SIZE, CELL_SIZE, CELL_SIZE, [3]);
-                        context.fill()
-                        context.beginPath()
-                        context.strokeStyle = "gainsboro";
-                        context.roundRect((xPos + x) * CELL_SIZE, (yPos + y) * CELL_SIZE, CELL_SIZE, CELL_SIZE, 0);
-                        context.stroke()
+                        location.beginPath()
+                        location.fillStyle = currentColor;
+                        location.roundRect((xPos + x) * cellSize, (yPos + y) * cellSize, cellSize, cellSize, [3]);
+                        location.fill()
+                        location.beginPath()
+                        location.strokeStyle = "gainsboro";
+                        location.roundRect((xPos + x) * cellSize, (yPos + y) * cellSize, cellSize, cellSize, 0);
+                        location.stroke()
                     }
                 });
             });
             // debugging: rotation, fills cells around tetromino
-            // currentShape.forEach((row, y) => {
+            // shape.forEach((row, y) => {
             //     row.forEach((cellValue, x) => {
             //         if (cellValue === 0) {
-            //             context.fillStyle = "black";
-            //             context.fillRect((this.xPos + x) * CELL_SIZE, (this.yPos + y) * CELL_SIZE, CELL_SIZE, CELL_SIZE);
+            //             location.fillStyle = "black";
+            //             location.fillRect((this.xPos + x) * cellSize, (this.yPos + y) * cellSize, cellSize, cellSize);
             //         }
             //     });
             // });
@@ -145,7 +205,7 @@ class Tetromino {
 
 class Field {
     constructor() {
-        this.tetromino = new Tetromino(context);
+        this.tetromino = new Tetromino(ctxGameArea);
         this.gameArea = Array.from({length: rows}, () => Array(columns).fill([0, ""]));
     }
 
@@ -154,19 +214,19 @@ class Field {
 
     drawStack() {
         // console.log("drawing current stack")
-        context.fillStyle = "whitesmoke";
-        context.fillRect(0, 0, columns * CELL_SIZE, rows * CELL_SIZE);
+        ctxGameArea.fillStyle = "whitesmoke";
+        ctxGameArea.fillRect(0, 0, columns * cellSize, rows * cellSize);
         this.gameArea.forEach((row, y) =>
             row.forEach((cell, x) => {
                 if (cell[0] > 0) {
-                    context.beginPath()
-                    context.fillStyle = cell[1];
-                    context.roundRect(x * CELL_SIZE, y * CELL_SIZE, CELL_SIZE, CELL_SIZE, [3]);
-                    context.fill()
-                    context.beginPath()
-                    context.strokeStyle = "gainsboro";
-                    context.roundRect(x * CELL_SIZE, y * CELL_SIZE, CELL_SIZE, CELL_SIZE, 0);
-                    context.stroke()
+                    ctxGameArea.beginPath()
+                    ctxGameArea.fillStyle = cell[1];
+                    ctxGameArea.roundRect(x * cellSize, y * cellSize, cellSize, cellSize, [3]);
+                    ctxGameArea.fill()
+                    ctxGameArea.beginPath()
+                    ctxGameArea.strokeStyle = "gainsboro";
+                    ctxGameArea.roundRect(x * cellSize, y * cellSize, cellSize, cellSize, 0);
+                    ctxGameArea.stroke()
                 }
             })
         );
@@ -174,9 +234,13 @@ class Field {
 
     updateField() {
         this.drawStack();
-        this.tetromino.drawTetromino();
+        this.tetromino.drawGameTetromino();
         let ghostPosition = this.calculateGhostPosition();
-        this.tetromino.drawTetromino(ghostPosition[0], ghostPosition[1], true);
+        this.tetromino.drawGameTetromino(ghostPosition[0], ghostPosition[1], true);
+        this.tetromino.drawSideTetromino(ctxNextArea, this.tetromino.tetrominoes[this.tetromino.nextTetrominoes[0]].shape, this.tetromino.tetrominoes[this.tetromino.nextTetrominoes[0]].color);
+        if (this.tetromino.heldTetromino) {
+            this.tetromino.drawSideTetromino(ctxHoldArea, this.tetromino.heldTetromino.shape, this.tetromino.heldTetromino.color);
+        }
         if (this.stackNeedsUpdate) {
             this.updateStack();
         }
@@ -188,11 +252,15 @@ class Field {
         currentShape.forEach((row, y) => {
             row.forEach((cellValue, x) => {
                 if (cellValue === 1) {
-                    this.gameArea[this.tetromino.yPos + y][this.tetromino.xPos + x] = [1, currentColor];
+                    if ((this.tetromino.yPos + y) < 0) {
+                        console.log("end game sequence")
+                    } else {
+                        this.gameArea[this.tetromino.yPos + y][this.tetromino.xPos + x] = [1, currentColor];
+                    }
                 }
             });
         });
-        this.tetromino = new Tetromino(context);
+        this.tetromino.setNextTetromino();
         this.tetrominoOrientation = 0;
     }
 
@@ -296,7 +364,6 @@ class Field {
         // console.log(`yPos is ${this.tetromino.yPos}`)
         isNewOrientationValid = this.isPositionValid();
         if (!isNewOrientationValid) {
-            console.log("position change not valid, testing wall kick")
             wallKickPossible = this.canKickWall();
             if (!wallKickPossible) {
                 // console.log("cannot kick wall")
@@ -374,7 +441,8 @@ class Field {
             case "KeyC":
             case "ShiftLeft":
             case "ShiftRight":
-                console.log("hold")
+                this.tetromino.holdTetromino();
+                this.updateField();
                 break;
             case "ArrowDown":
             case "auto":
@@ -383,6 +451,7 @@ class Field {
                     this.tetromino.yPos += 1;
                 } else {
                     this.stackNeedsUpdate = true;
+                    this.tetromino.canHoldTetromino = true;
                 }
         }
     }
@@ -415,11 +484,12 @@ class Field {
 }
 
 class Game {
-    constructor(ctx) {
-        context = ctx;
-        columns = ctx.canvas.width / CELL_SIZE;
-        rows = ctx.canvas.height / CELL_SIZE;
-        this.field = new Field(context);
+    constructor(contextGameArea, contextNextArea, contextHoldArea, size) {
+        ctxGameArea = contextGameArea;
+        ctxNextArea = contextNextArea;
+        ctxHoldArea = contextHoldArea;
+        cellSize = size;
+        this.field = new Field(ctxGameArea);
     }
 
     levelPoints = 0;
@@ -428,7 +498,9 @@ class Game {
 
     play(key) {
         // console.log("playing")
-        context.clearRect(0, 0, context.canvas.width, context.canvas.height);
+        ctxGameArea.clearRect(0, 0, ctxGameArea.canvas.width, ctxGameArea.canvas.height);
+        ctxNextArea.clearRect(0, 0, ctxNextArea.canvas.width, ctxNextArea.canvas.height);
+        ctxHoldArea.clearRect(0, 0, ctxHoldArea.canvas.width, ctxHoldArea.canvas.height)
         if (key !== "auto") {
             this.field.updateTetrominoPosition(key);
         } else {
@@ -442,6 +514,7 @@ class Game {
             this.level++;
             return true;
         }
+
         return false;
     }
 }
