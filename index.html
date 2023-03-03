@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -15,75 +14,50 @@
 </head>
 <br>
 <body>
-<div class="container px4 border">
+<div class="container">
     <div class="row">
-        <div class="col border" id="leftCol">
-            <div class="row border" id="logoArea">
-                <a href="#">
-                    <img class="img-fluid mx-auto d-block" style="max-width: 50%; height: auto;"
+        <div class="col-sm-4 border">
+            <div class="row" id="logoArea">
+                <a href="https://en.wikipedia.org/wiki/Tetris">
+                    <img class="img-fluid mx-auto d-block" style="max-height: 15vh;"
                          src="resources/static/images/The_Tetris_Company_logo_2019.png" alt="">
                 </a>
             </div>
-            <br>
-            <div class="row border" id="buttonsArea">
-                <button type="button" class="btn btn-lg btn-success mx-auto d-block" id="playButton"
-                        data-bs-toggle="button"
-                        autocomplete="off">
+
+            <div class="row" id="buttonsArea">
+                <button type="button" class="btn btn-lg btn-primary mx-auto d-block" id="playButton">
                     Start
                 </button>
             </div>
-            <br>
-            <div class="row border">
-                <div class="col" id="instructions">
-                    instructions
+
+            <div class="row">
+                <div class="col">
+                    <div class="row" id="scoreAndLevelArea">
+                        <div class="col" id="levelArea">
+                            Level: 0
+                        </div>
+                        <div class="col" id="scoreArea">
+                            Score: 0
+                        </div>
+                    </div>
+                    <div class="row">
+                        Next
+                        <canvas id="nextCanvas">
+                        </canvas>
+                    </div>
+                    <div class="row">
+                        Hold
+                        <canvas id="holdCanvas">
+                        </canvas>
+                    </div>
                 </div>
             </div>
         </div>
-        <div class="col-lg border" id="middleCol">
+
+        <div class="col-8">
             <div class="row border gameArea">
-                <!--                <canvas id="gameCanvas" width="200" height="440">-->
                 <canvas id="gameCanvas">
                 </canvas>
-            </div>
-        </div>
-        <div class="col border" id="rightCol">
-            <div class="row-sm border">
-                hold
-                <canvas id="holdCanvas" width="20" height="44">
-                </canvas>
-            </div>
-            <br>
-            <div class="row-sm border">
-                next
-                <canvas id="nextCanvas" width="20" height="44">
-                </canvas>
-            </div>
-            <br>
-            <div class="row border" id="scoreAndLevelArea">
-                <div class="col" id="levelArea">
-                    level
-                </div>
-                <div class="col" id="scoreArea">
-                    score
-                </div>
-            </div>
-        </div>
-    </div>
-    <br>
-    <br>
-    <div class="row border">
-        <div class="col" id="devCol">
-            <div>
-                <button type="button" class="btn btn-lg btn-secondary" id="switch" data-bs-toggle="button"
-                        autocomplete="off">
-                    Tetromino
-                </button>
-            </div>
-            <div>
-                <button type="button" class="btn btn-lg btn-secondary" id="field" data-bs-toggle="button"
-                        autocomplete="off">
-                    Field
-                </button>
             </div>
         </div>
     </div>
@@ -94,39 +68,45 @@
     const gameCanvas = document.getElementById("gameCanvas").getContext("2d");
     const holdCanvas = document.getElementById("holdCanvas").getContext("2d");
     const nextCanvas = document.getElementById("nextCanvas").getContext("2d");
-    let game = new Game(gameCanvas, nextCanvas, holdCanvas, blockSize);
+    let game = new Main(gameCanvas, nextCanvas, holdCanvas, blockSize);
     let key = null;
     let gameActive = false;
+    let gameEnded = false;
     let intervalId;
-
     let speed = 1000;
-    let levelUp = false;
-
-    function changePlayButton() {
-        if (gameActive) {
-            playButton.innerText = "Pause";
-            playButton.classList.remove("btn-success")
-            playButton.classList.add("btn-danger")
-        } else {
-            playButton.innerText = "Continue";
-            playButton.classList.remove("btn-danger")
-            playButton.classList.add("btn-success")
-        }
-    }
+    let gameStateChanged = false;
 
     function initCanvasReturnCellSize() {
-        let sizeOfIndividualBlocks = Math.round(((window.innerWidth) / 2) / 200) * 20;
-        let gameWidth = (sizeOfIndividualBlocks * 10).toString();
-        let gameHeight = (sizeOfIndividualBlocks * 22).toString();
-        let sideWidthHeight = (sizeOfIndividualBlocks * 2).toString();
-        document.getElementById("gameCanvas").setAttribute("width", gameWidth);
-        document.getElementById("gameCanvas").setAttribute("height", gameHeight);
-        document.getElementById("nextCanvas").setAttribute("width", sideWidthHeight);
-        document.getElementById("nextCanvas").setAttribute("height", sideWidthHeight);
-        document.getElementById("holdCanvas").setAttribute("width", sideWidthHeight);
-        document.getElementById("holdCanvas").setAttribute("height", sideWidthHeight);
-        return sizeOfIndividualBlocks;
+        // in progress
+        let windowHeight = window.innerHeight;
+        let blockSize = Math.round((windowHeight * 0.02)) * 10;
+        // let gameCanvasHeight = Math.round((windowHeight * 0.8) / 10) * 10;
+        // let gameCanvasWidth = (gameCanvasHeight / 2.2);
+        // let sideCanvasWH = (gameCanvasHeight / 200);
+        let gameCanvasHeight = 4400;
+        let gameCanvasWidth = 2000;
+        let sideCanvasWH = 400;
+        document.getElementById("gameCanvas").setAttribute("width", gameCanvasWidth.toString());
+        document.getElementById("gameCanvas").setAttribute("height", gameCanvasHeight.toString());
+        document.getElementById("nextCanvas").setAttribute("width", sideCanvasWH.toString());
+        document.getElementById("nextCanvas").setAttribute("height", sideCanvasWH.toString());
+        document.getElementById("holdCanvas").setAttribute("width", sideCanvasWH.toString());
+        document.getElementById("holdCanvas").setAttribute("height", sideCanvasWH.toString());
+        return blockSize;
     }
+
+    playButton.addEventListener("click", function () {
+        if (gameEnded) {
+            location.reload();
+        } else {
+            clearInterval(intervalId);
+            gameActive = !gameActive;
+            if (gameActive) {
+                runGame(speed);
+            }
+            changePlayButton();
+        }
+    });
 
     window.addEventListener('keydown', function (event) {
         if (event.defaultPrevented) {
@@ -134,7 +114,7 @@
         }
         key = event.code;
         if (gameActive) {
-            if (key === "Escape" || key === "F1") {
+            if (key === "Escape" || key === "F1" || key === 'KeyP') {
                 gameActive = false;
                 clearInterval(intervalId)
                 changePlayButton();
@@ -142,200 +122,46 @@
                 game.play(key);
             }
         }
-        key = null;
         event.preventDefault();
     }, true);
 
     function runGame(intervalSpeed) {
         clearInterval(intervalId);
-        intervalId = setInterval(function () {
-            document.getElementById("levelArea").innerText = "Level\n" + (game.level).toString();
-            document.getElementById("scoreArea").innerText = "Score\n" + (game.points).toString();
-            levelUp = game.play("auto")
-            if (levelUp) {
-                speed = 1000 * Math.pow((0.8 - (game.level - 1) * 0.007), game.level - 1);
-                runGame(speed);
-            }
-        }, intervalSpeed)
+        if (game.gameOver) {
+            gameEnded = true;
+            game.endGame();
+            changePlayButton();
+        } else {
+            intervalId = setInterval(function () {
+                document.getElementById("levelArea").innerText = "Level: " + (game.level).toString();
+                document.getElementById("scoreArea").innerText = "Score: " + (game.points).toString();
+                gameStateChanged = game.play("auto")
+                if (gameStateChanged) {
+                    speed = 1000 * Math.pow((0.8 - (game.level - 1) * 0.007), game.level - 1);
+                    runGame(speed);
+                }
+            }, intervalSpeed)
+        }
 
     }
 
-    playButton.addEventListener("click", function () {
-        gameActive = !gameActive;
-        clearInterval(intervalId);
-        if (gameActive) {
-            changePlayButton();
-            runGame(speed);
+    function changePlayButton() {
+        if (gameEnded) {
+            playButton.innerText = "Game Over!\nClick to reload";
+            playButton.classList.remove("btn-danger");
+            playButton.classList.add("btn-dark");
+        } else if (gameActive) {
+            // game.backgroundMusic.play();
+            playButton.innerText = "Pause";
+            playButton.classList.remove("btn-primary");
+            playButton.classList.add("btn-danger");
         } else {
-            changePlayButton();
+            // game.backgroundMusic.pause();
+            playButton.innerText = "Continue";
+            playButton.classList.remove("btn-danger");
+            playButton.classList.add("btn-success");
         }
-    });
-
-    // debugging: switch tetromino
-    document.getElementById("switch").addEventListener("click", function () {
-        game.field.tetromino = new Tetromino(gameCanvas);
-    });
-
-    // debugging: changes field to one with rows that are almost complete
-    document.getElementById("field").addEventListener("click", function () {
-        game.field.gameArea = [
-            [
-                [0, ''], [0, ''],
-                [0, ''], [0, ''],
-                [0, ''], [0, ''],
-                [0, ''], [0, ''],
-                [0, ''], [0, '']
-            ],
-            [
-                [0, ''], [0, ''],
-                [0, ''], [0, ''],
-                [0, ''], [0, ''],
-                [0, ''], [0, ''],
-                [0, ''], [0, '']
-            ],
-            [
-                [0, ''], [0, ''],
-                [0, ''], [0, ''],
-                [0, ''], [0, ''],
-                [0, ''], [0, ''],
-                [0, ''], [0, '']
-            ],
-            [
-                [0, ''], [0, ''],
-                [0, ''], [0, ''],
-                [0, ''], [0, ''],
-                [0, ''], [0, ''],
-                [0, ''], [0, '']
-            ],
-            [
-                [0, ''], [0, ''],
-                [0, ''], [0, ''],
-                [0, ''], [0, ''],
-                [0, ''], [0, ''],
-                [0, ''], [0, '']
-            ],
-            [
-                [0, ''], [0, ''],
-                [0, ''], [0, ''],
-                [0, ''], [0, ''],
-                [0, ''], [0, ''],
-                [0, ''], [0, '']
-            ],
-            [
-                [0, ''], [0, ''],
-                [0, ''], [0, ''],
-                [0, ''], [0, ''],
-                [0, ''], [0, ''],
-                [0, ''], [0, '']
-            ],
-            [
-                [0, ''], [0, ''],
-                [0, ''], [0, ''],
-                [0, ''], [0, ''],
-                [0, ''], [0, ''],
-                [0, ''], [0, '']
-            ],
-            [
-                [0, ''], [0, ''],
-                [0, ''], [0, ''],
-                [0, ''], [0, ''],
-                [0, ''], [0, ''],
-                [0, ''], [0, '']
-            ],
-            [
-                [0, ''], [0, ''],
-                [0, ''], [0, ''],
-                [0, ''], [0, ''],
-                [0, ''], [0, ''],
-                [0, ''], [0, '']
-            ],
-            [
-                [0, ''], [0, ''],
-                [0, ''], [0, ''],
-                [0, ''], [0, ''],
-                [0, ''], [0, ''],
-                [0, ''], [0, '']
-            ],
-            [
-                [0, ''], [0, ''],
-                [0, ''], [0, ''],
-                [0, ''], [0, ''],
-                [0, ''], [0, ''],
-                [0, ''], [0, '']
-            ],
-            [
-                [0, ''], [0, ''],
-                [0, ''], [0, ''],
-                [0, ''], [0, ''],
-                [0, ''], [0, ''],
-                [0, ''], [0, '']
-            ],
-            [
-                [0, ''], [0, ''],
-                [0, ''], [0, ''],
-                [0, ''], [0, ''],
-                [0, ''], [0, ''],
-                [0, ''], [0, '']
-            ],
-            [
-                [0, ''], [0, ''],
-                [0, ''], [0, ''],
-                [0, ''], [0, ''],
-                [0, ''], [0, ''],
-                [0, ''], [0, '']
-            ],
-            [
-                [0, ''], [0, ''],
-                [0, ''], [0, ''],
-                [0, ''], [0, ''],
-                [0, ''], [0, ''],
-                [0, ''], [0, '']
-            ],
-            [
-                [0, ''], [0, ''],
-                [0, ''], [0, ''],
-                [0, ''], [0, ''],
-                [0, ''], [0, ''],
-                [0, ''], [0, '']
-            ],
-            [
-                [0, ''], [0, ''],
-                [0, ''], [0, ''],
-                [0, ''], [0, ''],
-                [0, ''], [0, ''],
-                [0, ''], [0, '']
-            ],
-            [
-                [1, 'cyan'], [1, 'cyan'],
-                [1, 'cyan'], [1, 'cyan'],
-                [1, 'cyan'], [0, ''],
-                [1, 'cyan'], [1, 'cyan'],
-                [1, 'cyan'], [1, 'cyan']
-            ],
-            [
-                [1, 'cyan'], [1, 'cyan'],
-                [1, 'cyan'], [1, 'cyan'],
-                [1, 'cyan'], [0, ''],
-                [1, 'cyan'], [1, 'cyan'],
-                [1, 'cyan'], [1, 'cyan']
-            ],
-            [
-                [1, 'cyan'], [1, 'cyan'],
-                [1, 'cyan'], [1, 'cyan'],
-                [1, 'cyan'], [0, ''],
-                [1, 'cyan'], [1, 'cyan'],
-                [1, 'cyan'], [1, 'cyan']
-            ],
-            [
-                [1, 'cyan'], [1, 'cyan'],
-                [1, 'cyan'], [1, 'cyan'],
-                [1, 'cyan'], [0, ''],
-                [1, 'cyan'], [1, 'cyan'],
-                [1, 'cyan'], [1, 'cyan']
-            ]
-        ];
-    });
+    }
 </script>
 </body>
 </html>
-
