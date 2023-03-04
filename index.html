@@ -16,46 +16,55 @@
 <body>
 <div class="container">
     <div class="row">
-        <div class="col-sm-4 border">
+        <!--        <div class="col-sm-4 border">-->
+        <div class="col">
             <div class="row" id="logoArea">
                 <a href="https://en.wikipedia.org/wiki/Tetris">
-                    <img class="img-fluid mx-auto d-block" style="max-height: 15vh;"
+                    <img class="img-fluid mx-auto d-block"
                          src="resources/static/images/The_Tetris_Company_logo_2019.png" alt="">
                 </a>
             </div>
-
+            <br>
             <div class="row" id="buttonsArea">
                 <button type="button" class="btn btn-lg btn-primary mx-auto d-block" id="playButton">
                     Start
                 </button>
             </div>
-
+            <br>
             <div class="row">
-                <div class="col">
-                    <div class="row" id="scoreAndLevelArea">
-                        <div class="col" id="levelArea">
-                            Level: 0
+                <div class="col text-white fs-5 fw-bold">
+                    <div class="row">
+                        <div class="col " id="levelArea">
+                            Level:
+                            <br>
+                            1
                         </div>
-                        <div class="col" id="scoreArea">
-                            Score: 0
+                        <div class="col text-white" id="scoreArea">
+                            Score:
+                            <br>
+                            0
                         </div>
                     </div>
+                    <br>
                     <div class="row">
-                        Next
-                        <canvas id="nextCanvas">
-                        </canvas>
-                    </div>
-                    <div class="row">
-                        Hold
-                        <canvas id="holdCanvas">
-                        </canvas>
+                        <div class="col">
+                            <div class="row nextArea">
+                                Next
+                                <canvas id="nextCanvas">
+                                </canvas>
+                            </div>
+                            <div class="row holdArea">
+                                Hold
+                                <canvas id="holdCanvas">
+                                </canvas>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>
         </div>
-
-        <div class="col-8">
-            <div class="row border gameArea">
+        <div class="col-8 mx-4 ">
+            <div class="row gameArea">
                 <canvas id="gameCanvas">
                 </canvas>
             </div>
@@ -63,105 +72,9 @@
     </div>
 </div>
 <script>
-    let blockSize = initCanvasReturnCellSize();
-    const playButton = document.getElementById("playButton");
-    const gameCanvas = document.getElementById("gameCanvas").getContext("2d");
-    const holdCanvas = document.getElementById("holdCanvas").getContext("2d");
-    const nextCanvas = document.getElementById("nextCanvas").getContext("2d");
-    let game = new Main(gameCanvas, nextCanvas, holdCanvas, blockSize);
-    let key = null;
-    let gameActive = false;
-    let gameEnded = false;
-    let intervalId;
-    let speed = 1000;
-    let gameStateChanged = false;
-
-    function initCanvasReturnCellSize() {
-        // in progress
-        let windowHeight = window.innerHeight;
-        let blockSize = Math.round((windowHeight * 0.02)) * 10;
-        // let gameCanvasHeight = Math.round((windowHeight * 0.8) / 10) * 10;
-        // let gameCanvasWidth = (gameCanvasHeight / 2.2);
-        // let sideCanvasWH = (gameCanvasHeight / 200);
-        let gameCanvasHeight = 4400;
-        let gameCanvasWidth = 2000;
-        let sideCanvasWH = 400;
-        document.getElementById("gameCanvas").setAttribute("width", gameCanvasWidth.toString());
-        document.getElementById("gameCanvas").setAttribute("height", gameCanvasHeight.toString());
-        document.getElementById("nextCanvas").setAttribute("width", sideCanvasWH.toString());
-        document.getElementById("nextCanvas").setAttribute("height", sideCanvasWH.toString());
-        document.getElementById("holdCanvas").setAttribute("width", sideCanvasWH.toString());
-        document.getElementById("holdCanvas").setAttribute("height", sideCanvasWH.toString());
-        return blockSize;
-    }
-
-    playButton.addEventListener("click", function () {
-        if (gameEnded) {
-            location.reload();
-        } else {
-            clearInterval(intervalId);
-            gameActive = !gameActive;
-            if (gameActive) {
-                runGame(speed);
-            }
-            changePlayButton();
-        }
-    });
-
-    window.addEventListener('keydown', function (event) {
-        if (event.defaultPrevented) {
-            return;
-        }
-        key = event.code;
-        if (gameActive) {
-            if (key === "Escape" || key === "F1" || key === 'KeyP') {
-                gameActive = false;
-                clearInterval(intervalId)
-                changePlayButton();
-            } else {
-                game.play(key);
-            }
-        }
-        event.preventDefault();
-    }, true);
-
-    function runGame(intervalSpeed) {
-        clearInterval(intervalId);
-        if (game.gameOver) {
-            gameEnded = true;
-            game.endGame();
-            changePlayButton();
-        } else {
-            intervalId = setInterval(function () {
-                document.getElementById("levelArea").innerText = "Level: " + (game.level).toString();
-                document.getElementById("scoreArea").innerText = "Score: " + (game.points).toString();
-                gameStateChanged = game.play("auto")
-                if (gameStateChanged) {
-                    speed = 1000 * Math.pow((0.8 - (game.level - 1) * 0.007), game.level - 1);
-                    runGame(speed);
-                }
-            }, intervalSpeed)
-        }
-
-    }
-
-    function changePlayButton() {
-        if (gameEnded) {
-            playButton.innerText = "Game Over!\nClick to reload";
-            playButton.classList.remove("btn-danger");
-            playButton.classList.add("btn-dark");
-        } else if (gameActive) {
-            // game.backgroundMusic.play();
-            playButton.innerText = "Pause";
-            playButton.classList.remove("btn-primary");
-            playButton.classList.add("btn-danger");
-        } else {
-            // game.backgroundMusic.pause();
-            playButton.innerText = "Continue";
-            playButton.classList.remove("btn-danger");
-            playButton.classList.add("btn-success");
-        }
-    }
+    window.onload = function () {
+        init()
+    };
 </script>
 </body>
 </html>
