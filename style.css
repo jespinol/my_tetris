@@ -8,12 +8,14 @@ body {
     background-color: #181818;
     width: 45vh;
     height: auto;
+    padding: 5px;
 }
 
 .sideCanvases canvas {
     background-color: #181818;
-    max-width: 20vh;
+    width: 15vw;
     height: auto;
+    padding: 3px;
 }
 
 .logo {
