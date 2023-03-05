@@ -4,11 +4,26 @@ body {
     background-size: 20px 20px;
 }
 
-.gameArea {
-    max-height: 90vh;
+.mainCanvas canvas {
+    background-color: #181818;
+    width: 45vh;
+    height: auto;
 }
 
-canvas{
-   background-color: #181818;
+.sideCanvases canvas {
+    background-color: #181818;
+    max-width: 20vh;
+    height: auto;
 }
 
+.logo {
+    width: min(20vw, 20vh);
+}
+
+.leftCol {
+    max-width: 20vw;
+}
+
+.rightCol {
+    max-width: 80vw;
+}
