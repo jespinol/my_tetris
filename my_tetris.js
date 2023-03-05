@@ -1,30 +1,27 @@
-function init() {
+function setCanvas(canvasId, width, height) {
+    document.getElementById(canvasId).setAttribute("width", width);
+    document.getElementById(canvasId).setAttribute("height", height);
+}
+function getBlockSizeSetCanvas() {
+    let blockSize  = Math.round((window.innerHeight * 0.045) / 10) * 10;
+    let gameCanvasWidth = (blockSize * 20).toString();
+    let gameCanvasHeight = (blockSize * 44).toString();
+    let sideCanvasSize = (blockSize * 4).toString();
+    setCanvas("gameCanvas", gameCanvasWidth,gameCanvasHeight);
+    setCanvas("nextCanvas", sideCanvasSize, sideCanvasSize);
+    setCanvas("holdCanvas", sideCanvasSize, sideCanvasSize);
+    return blockSize * 2;
+}
+function init(size) {
     const playButton = document.getElementById("playButton");
     const gameCanvas = document.getElementById("gameCanvas");
     const holdCanvas = document.getElementById("holdCanvas");
     const nextCanvas = document.getElementById("nextCanvas");
-    let blockSize = initCanvasReturnCellSize();
-    let game = new Tetris(gameCanvas, nextCanvas, holdCanvas, blockSize);
+    let game = new Tetris(gameCanvas, nextCanvas, holdCanvas, size);
     let gameActive = false;
     let gameEnded = false;
     let lastRender = 0;
     let animationReference;
-
-    function initCanvasReturnCellSize() {
-        // in progress
-        let windowHeight = window.innerHeight;
-        let blockSize = Math.ceil(((windowHeight*0.8) * 0.02)) * 4;
-        let gameCanvasHeight = blockSize * 44;
-        let gameCanvasWidth = blockSize * 20;
-        let sideCanvasWH = blockSize*4;
-        gameCanvas.setAttribute("width", gameCanvasWidth.toString());
-        gameCanvas.setAttribute("height", gameCanvasHeight.toString());
-        nextCanvas.setAttribute("width", sideCanvasWH.toString());
-        nextCanvas.setAttribute("height", sideCanvasWH.toString());
-        holdCanvas.setAttribute("width", sideCanvasWH.toString());
-        holdCanvas.setAttribute("height", sideCanvasWH.toString());
-        return blockSize;
-    }
 
     window.addEventListener('keydown', function (event) {
         let key = event.code;
@@ -131,28 +128,28 @@ class Tetris {
     gameOver = false;
     gameState = 0; // 0: new, 1: running, 2: paused, 3: game over
 
-    runGame(key = "default"){
-        this.field.updatePos(key);
-        this.field.updateField();
-        let clearedRows = this.field.checkRows();
-        this.levelPoints += clearedRows;
-        this.points += clearedRows * 100 * this.level;
-        if (this.levelPoints >= (5 * this.level)) {
-            this.level++;
-            this.speed = 1000 * Math.pow((0.8 - (this.level - 1) * 0.007), this.level - 1);
-        }
-        return false;
-    }
-
-    play(key) {
-        switch (this.gameState) {
-            case 0:
-                this.field.drawText(ctxGameArea, ["3", "2", "1", "Go!"]);
-            case 1:
-            case 2:
-            case 3:
-        }
-    }
+    // runGame(key = "default"){
+    //     this.field.updatePos(key);
+    //     this.field.updateField();
+    //     let clearedRows = this.field.checkRows();
+    //     this.levelPoints += clearedRows;
+    //     this.points += clearedRows * 100 * this.level;
+    //     if (this.levelPoints >= (5 * this.level)) {
+    //         this.level++;
+    //         this.speed = 1000 * Math.pow((0.8 - (this.level - 1) * 0.007), this.level - 1);
+    //     }
+    //     return false;
+    // }
+    //
+    // play(key) {
+    //     switch (this.gameState) {
+    //         case 0:
+    //             this.field.drawText(ctxGameArea, ["3", "2", "1", "Go!"]);
+    //         case 1:
+    //         case 2:
+    //         case 3:
+    //     }
+    // }
 
     oldPlay(key) {
         switch (this.gameState) {
@@ -178,7 +175,7 @@ class Tetris {
         this.points += clearedRows * 100 * this.level;
         if (this.levelPoints >= (5 * this.level)) {
             this.level++;
-            this.speed = 1000 * Math.pow((0.8 - (this.level - 1) * 0.007), this.level - 1);
+            this.speed = 1000 * Math.pow((0.9 - (this.level - 1) * 0.007), this.level - 1);
         }
         return false;
     }
