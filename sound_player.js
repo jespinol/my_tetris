@@ -1,4 +1,4 @@
-import {SOUNDS} from './constants.js';
+import { SOUNDS } from './constants.js';
 
 const { BACKGROUND_MUSIC } = SOUNDS;
 
@@ -7,10 +7,6 @@ export default class SoundPlayer {
     sound.volume = volumeLevel;
     sound.loop = doLoop;
     await sound.play();
-  }
-
-  static changeVolume(sound, volumeLevel) {
-    sound.volume = volumeLevel;
   }
 
   static fadeAudioOut(sound) {

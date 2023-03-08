@@ -30,7 +30,6 @@ export default class MyTetris {
       }
       case RUNNING:
         SoundPlayer.play(BACKGROUND_MUSIC);
-        // this.runGame(key);
         this.gameField.updatePos(key);
         this.gameField.updateField();
         if (this.gameField.stackState === NOT_UPDATABLE) {
@@ -88,30 +87,4 @@ export default class MyTetris {
   increaseSpeed() {
     this.speed = 1000 * (0.9 - (this.level - 1) * 0.007) ** (this.level - 1);
   }
-
-  // runGame_(key) {
-  //     this.gameField.updatePos(key);
-  //     this.gameField.updateField();
-  //     if (this.gameField.stackState === NOT_UPDATABLE) {
-  //         this.gameState = ENDING;
-  //     }
-  //         // else if (this.gameField.fieldState === "update") {
-  //         //     // console.log("here")
-  //         //     this.gameState = "updating";
-  //     // }
-  //     else {
-  //         let clearedRows = this.gameField.checkRows();
-  //         this.levelPoints += clearedRows;
-  //         this.points += clearedRows * 100 * this.level;
-  //         document.getElementById("score").innerText = (this.points).toString();
-  //         if (this.levelPoints >= (5 * this.level)) {
-  //             this.level++;
-  //             this.gameField.drawText(this.gameField.ctxMain, "Level up!", 2);
-  //             document.getElementById("level").innerText = (this.level).toString();
-  //             this.speed = 1000 * Math.pow((0.9 - (this.level - 1) * 0.007), this.level - 1);
-  //             // this.tempSpeed = newSpeed;
-  //         }
-  //     }
-
-  // }
 }

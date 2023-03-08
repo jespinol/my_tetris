@@ -1,5 +1,5 @@
 import Tetromino from './tetromino.js';
-import {SIDES, STACK_STATES, TURNS} from './constants.js';
+import { SIDES, STACK_STATES, TURNS } from './constants.js';
 
 const { UNCHANGED, UPDATING, NOT_UPDATABLE } = STACK_STATES;
 const {
@@ -35,8 +35,6 @@ export default class GameField {
     return [xPosOffset, yPosOffset];
   }
 
-  hardDropPerformed = false;
-
   updateField() {
     this.clearCanvas();
     // draw the current stack
@@ -58,21 +56,8 @@ export default class GameField {
     if (this.stackNeedsUpdate) {
       this.updateStack();
       return;
-      // console.log("update stack")
-      // if (this.hardDropPerformed) {
-      //     this.hardDropPerformed = false;
-      //     this.fieldState = UNCHANGED
-      //     this.updateStack();
-      // } else {
-      //     this.fieldState = "update";
-      //     return;
-      // }
-      // let fieldUpdatable =  this.updateStack();
-      // if (fieldUpdatable) {
-      // }
     }
     this.stackState = UNCHANGED;
-    // return true;
   }
 
   updateStack() {
@@ -81,7 +66,6 @@ export default class GameField {
       row.forEach((cellValue, x) => {
         if (cellValue === 1) {
           if ((this.tetromino.yPos + y) <= 0) {
-            // this.fieldUpdatable = false;
             this.stackState = NOT_UPDATABLE;
             return;
           }
@@ -206,8 +190,6 @@ export default class GameField {
   }
 
   canKickWall() {
-    // const potentialPositionChange = 1;
-
     // for a rotated tetromino, checks if there would be a conflict (with the wall or the stack) if it's moved one step in one direction as the result of a kick
     const conflictLeft = !this.isPositionValid(this.tetromino.yPos, this.tetromino.xPos - 1);
     const conflictRight = !this.isPositionValid(this.tetromino.yPos, this.tetromino.xPos + 1);
@@ -359,7 +341,6 @@ export default class GameField {
   }
 
   drawText(location, text, sizeMultiplier = 0, color = '#FFFFFF') {
-    // location.clearRect(0, 0, location.canvas.width, location.canvas.height);
     location.font = `${30 * sizeMultiplier}px Arial`;
     location.fillStyle = color;
     location.textAlign = 'center';

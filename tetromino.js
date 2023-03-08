@@ -1,9 +1,9 @@
-import {SIDES, TURNS} from './constants.js';
+import { SIDES } from './constants.js';
 
 const {
   LEFT, RIGHT, UP, DOWN,
 } = SIDES;
-const { CLOCKWISE_TURN, COUNTERCLOCKWISE_TURN } = TURNS;
+
 export default class Tetromino {
   static tetrominoes = {
     l: {
