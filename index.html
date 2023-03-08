@@ -10,7 +10,11 @@
             integrity="sha384-kenU1KFdBIe4zVF0s0G1M5b4hcpxyD9F7jL+jjXkk+Q2h455rYXK/7HAuoJl+0I4"
             crossorigin="anonymous"></script>
     <link href="style.css" rel="stylesheet">
-    <script src="my_tetris.js"></script>
+    <script type="module">
+        import init from "./init.js";
+
+        window.onload = init;
+    </script>
 </head>
 <br>
 <body>
@@ -32,14 +36,12 @@
                 <div class="col text-white fs-5 fw-bold">
                     <div class="row">
                         <div class="col " id="levelArea">
-                            Level:
-                            <br>
-                            1
+                            <div>Level</div>
+                            <div id="level">1</div>
                         </div>
                         <div class="col text-white" id="scoreArea">
-                            Score:
-                            <br>
-                            0
+                            <div>Score</div>
+                            <div id="score">0</div>
                         </div>
                     </div>
                     <br>
@@ -75,11 +77,5 @@
         </div>
     </div>
 </div>
-<script>
-    window.onload = function () {
-        let blockSize = getBlockSizeSetCanvas();
-        init(blockSize);
-    };
-</script>
 </body>
 </html>
