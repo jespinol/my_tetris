@@ -1,5 +1,5 @@
 import MyTetris from './my_tetris.js';
-import { GAME_STATES } from './constants.js';
+import {GAME_STATES} from './constants.js';
 
 const {
   NEW, RUNNING, PAUSED, ENDING, ENDED,
@@ -56,6 +56,9 @@ export default function init() {
         break;
       case NEW:
         changePlayButton();
+        break;
+      default:
+        break;
     }
     requestAnimationFrame((timestamp) => game.animate(timestamp));
     // game.play();

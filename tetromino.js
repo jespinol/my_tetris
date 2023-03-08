@@ -6,13 +6,27 @@ const {
 const { CLOCKWISE_TURN, COUNTERCLOCKWISE_TURN } = TURNS;
 export default class Tetromino {
   static tetrominoes = {
-      l: {shape: [[0, 0, 1], [1, 1, 1], [0, 0, 0]], color: "#FFA366", xStart: 3, yStart: -1}, // Orange Ricky
-      j: {shape: [[1, 0, 0], [1, 1, 1], [0, 0, 0]], color: "#0099CC", xStart: 3, yStart: -1}, // Blue Ricky
-      z: {shape: [[1, 1, 0], [0, 1, 1], [0, 0, 0]], color: "#FF5A5A", xStart: 3, yStart: -1}, // Cleveland Z
-      s: {shape: [[0, 1, 1], [1, 1, 0], [0, 0, 0]], color: "#70C05A", xStart: 3, yStart: -1}, // Rhode Island Z
-      i: {shape: [[0, 0, 0, 0], [1, 1, 1, 1], [0, 0, 0, 0], [0, 0, 0, 0]], color: "#97FFFF", xStart: 3, yStart: -2}, // Hero
-      t: {shape: [[0, 1, 0], [1, 1, 1], [0, 0, 0]], color: "#A667E7", xStart: 3, yStart: -1}, // Teewee
-      o: {shape: [[1, 1], [1, 1]], color: "#FFE066", xStart: 4, yStart: -1}, // Smashboy
+    l: {
+      shape: [[0, 0, 1], [1, 1, 1], [0, 0, 0]], color: '#FFA366', xStart: 3, yStart: -1,
+    }, // Orange Ricky
+    j: {
+      shape: [[1, 0, 0], [1, 1, 1], [0, 0, 0]], color: '#0099CC', xStart: 3, yStart: -1,
+    }, // Blue Ricky
+    z: {
+      shape: [[1, 1, 0], [0, 1, 1], [0, 0, 0]], color: '#FF5A5A', xStart: 3, yStart: -1,
+    }, // Cleveland Z
+    s: {
+      shape: [[0, 1, 1], [1, 1, 0], [0, 0, 0]], color: '#70C05A', xStart: 3, yStart: -1,
+    }, // Rhode Island Z
+    i: {
+      shape: [[0, 0, 0, 0], [1, 1, 1, 1], [0, 0, 0, 0], [0, 0, 0, 0]], color: '#97FFFF', xStart: 3, yStart: -2,
+    }, // Hero
+    t: {
+      shape: [[0, 1, 0], [1, 1, 1], [0, 0, 0]], color: '#A667E7', xStart: 3, yStart: -1,
+    }, // Teewee
+    o: {
+      shape: [[1, 1], [1, 1]], color: '#FFE066', xStart: 4, yStart: -1,
+    }, // Smashboy
   };
 
   constructor() {
@@ -101,6 +115,9 @@ export default class Tetromino {
             position = i;
           }
         }
+        break;
+      default:
+        break;
     }
     return position;
   }

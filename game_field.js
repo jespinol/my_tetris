@@ -9,6 +9,7 @@ const { CLOCKWISE_TURN, COUNTERCLOCKWISE_TURN } = TURNS;
 
 export default class GameField {
   static columns = 10;
+
   static rows = 22;
 
   constructor(mainCanvasId, nextCanvasId, holdCanvasId, blockSize) {
@@ -71,7 +72,7 @@ export default class GameField {
       // }
     }
     this.stackState = UNCHANGED;
-    return true;
+    // return true;
   }
 
   updateStack() {
@@ -82,14 +83,13 @@ export default class GameField {
           if ((this.tetromino.yPos + y) <= 0) {
             // this.fieldUpdatable = false;
             this.stackState = NOT_UPDATABLE;
-            return false;
+            return;
           }
           this.gameField[this.tetromino.yPos + y][this.tetromino.xPos + x] = [1, this.tetromino.color];
         }
       });
     });
     this.tetromino.setCurrentAndNext();
-    return true;
   }
 
   updatePos(key = 'default') {
@@ -136,6 +136,9 @@ export default class GameField {
           this.stackNeedsUpdate = true;
           this.tetromino.canHold = true;
         }
+        break;
+      default:
+        break;
     }
     return true;
   }
@@ -171,7 +174,7 @@ export default class GameField {
     while (validPosition) {
       validPosition = this.isPositionValid(finalYPos + 1, finalXPos);
       if (validPosition) {
-        finalYPos++;
+        finalYPos += 1;
       }
     }
     if (!isGhost) {
@@ -183,7 +186,6 @@ export default class GameField {
 
   calculateRotation(direction) {
     const previousShape = this.tetromino.shape;
-    let isNewOrientationValid;
     let wallKickPossible;
     switch (direction) {
       case CLOCKWISE_TURN:
@@ -191,9 +193,11 @@ export default class GameField {
         break;
       case COUNTERCLOCKWISE_TURN:
         this.tetromino.shape = previousShape[0].map((value, index) => previousShape.map((row) => row[row.length - index - 1]));
+        break;
+      default:
+        break;
     }
-    isNewOrientationValid = this.isPositionValid();
-    if (!isNewOrientationValid) {
+    if (!this.isPositionValid()) {
       wallKickPossible = this.canKickWall();
       if (!wallKickPossible) {
         this.tetromino.shape = previousShape;
@@ -202,13 +206,13 @@ export default class GameField {
   }
 
   canKickWall() {
-    const potentialPositionChange = 1;
+    // const potentialPositionChange = 1;
 
     // for a rotated tetromino, checks if there would be a conflict (with the wall or the stack) if it's moved one step in one direction as the result of a kick
-    const conflictLeft = !this.isPositionValid(this.tetromino.yPos, this.tetromino.xPos - potentialPositionChange);
-    const conflictRight = !this.isPositionValid(this.tetromino.yPos, this.tetromino.xPos + potentialPositionChange);
-    const conflictUp = !this.isPositionValid(this.tetromino.yPos - potentialPositionChange, this.tetromino.xPos);
-    const conflictDown = !this.isPositionValid(this.tetromino.yPos + potentialPositionChange, this.tetromino.xPos);
+    const conflictLeft = !this.isPositionValid(this.tetromino.yPos, this.tetromino.xPos - 1);
+    const conflictRight = !this.isPositionValid(this.tetromino.yPos, this.tetromino.xPos + 1);
+    const conflictUp = !this.isPositionValid(this.tetromino.yPos - 1, this.tetromino.xPos);
+    const conflictDown = !this.isPositionValid(this.tetromino.yPos + 1, this.tetromino.xPos);
 
     // if the i tetromino is rotated, it can move one or two positions depending on which side makes the kick
     // this checks if moving two positions would be valid
@@ -217,10 +221,10 @@ export default class GameField {
     let conflictUpMoveTwo = true;
     let conflictDownMoveTwo = true;
     if (this.tetromino.color === Tetromino.tetrominoes.i.color) {
-      conflictLeftMoveTwo = !this.isPositionValid(this.tetromino.yPos, this.tetromino.xPos - (potentialPositionChange + 1));
-      conflictRightMoveTwo = !this.isPositionValid(this.tetromino.yPos, this.tetromino.xPos + (potentialPositionChange + 1));
-      conflictUpMoveTwo = !this.isPositionValid(this.tetromino.yPos - (potentialPositionChange + 1), this.tetromino.xPos);
-      conflictDownMoveTwo = !this.isPositionValid(this.tetromino.yPos + (potentialPositionChange + 1), this.tetromino.xPos);
+      conflictLeftMoveTwo = !this.isPositionValid(this.tetromino.yPos, this.tetromino.xPos - 2);
+      conflictRightMoveTwo = !this.isPositionValid(this.tetromino.yPos, this.tetromino.xPos + 2);
+      conflictUpMoveTwo = !this.isPositionValid(this.tetromino.yPos - 2, this.tetromino.xPos);
+      conflictDownMoveTwo = !this.isPositionValid(this.tetromino.yPos + 2, this.tetromino.xPos);
     }
 
     const canKickOnePosition = !(conflictLeft && conflictRight && conflictUp && conflictDown);
@@ -231,38 +235,37 @@ export default class GameField {
     }
     if (conflictLeft) {
       if (!conflictRight) {
-        this.tetromino.xPos += potentialPositionChange;
+        this.tetromino.xPos += 1;
         return true;
       } if (!conflictRightMoveTwo) {
-        this.tetromino.xPos += (potentialPositionChange + 1);
+        this.tetromino.xPos += 2;
         return true;
       }
     }
     if (conflictRight) {
       if (!conflictLeft) {
-        this.tetromino.xPos -= potentialPositionChange;
+        this.tetromino.xPos -= 1;
         return true;
       } if (!conflictLeftMoveTwo) {
-        this.tetromino.xPos -= (potentialPositionChange + 1);
+        this.tetromino.xPos -= 2;
         return true;
       }
     }
     if (conflictUp) {
       if (!conflictDown) {
-        this.tetromino.yPos += potentialPositionChange;
+        this.tetromino.yPos += 1;
         return true;
       } if (!conflictDownMoveTwo) {
-        this.tetromino.yPos += (potentialPositionChange + 1);
+        this.tetromino.yPos += 2;
         return true;
       }
     }
     if (conflictDown) {
       if (!conflictUp) {
-        this.tetromino.yPos -= potentialPositionChange;
+        this.tetromino.yPos -= 1;
         return true;
       } if (!conflictUpMoveTwo) {
-        this.tetromino.yPos -= (potentialPositionChange + 1);
-        console.log(this.tetromino.yPos);
+        this.tetromino.yPos -= 2;
         return true;
       }
     }
@@ -282,7 +285,7 @@ export default class GameField {
       if (row2clear) {
         this.gameField.splice(y, 1);
         this.gameField.unshift(Array(GameField.columns).fill([0, '']));
-        clearedRows++;
+        clearedRows += 1;
       }
     }
     const tetris = Math.floor(clearedRows / 4);
@@ -316,8 +319,8 @@ export default class GameField {
               color = cell[1];
             }
             gradient.addColorStop(0, color);
-            gradient.addColorStop(0.5, this.shadeColor(color, -10));
-            gradient.addColorStop(1, this.shadeColor(color, -40));
+            gradient.addColorStop(0.5, GameField.shadeColor(color, -10));
+            gradient.addColorStop(1, GameField.shadeColor(color, -40));
             location.fillStyle = gradient;
             location.fill();
           }
@@ -338,11 +341,12 @@ export default class GameField {
     });
   }
 
-  count = 1
+  count = 1;
+
   drawCountdown() {
     this.clearCanvas(this.ctxMain);
     this.drawText(this.ctxMain, this.count.toString(), 10);
-    this.count--;
+    this.count -= 1;
     return this.count < 1;
   }
 
@@ -362,14 +366,14 @@ export default class GameField {
     location.fillText(text, location.canvas.width / 2, location.canvas.height / 2);
   }
 
-  shadeColor(color, percent) { // adapted from https://stackoverflow.com/a/13532993
+  static shadeColor(color, percent) { // adapted from https://stackoverflow.com/a/13532993
     let R = parseInt(color.substring(1, 3), 16);
     let G = parseInt(color.substring(3, 5), 16);
     let B = parseInt(color.substring(5, 7), 16);
 
-    R = parseInt(R * (100 + percent) / 100);
-    G = parseInt(G * (100 + percent) / 100);
-    B = parseInt(B * (100 + percent) / 100);
+    R = parseInt((R * (100 + percent)) / 100, 10);
+    G = parseInt((G * (100 + percent)) / 100, 10);
+    B = parseInt((B * (100 + percent)) / 100, 10);
 
     R = (R < 255) ? R : 255;
     G = (G < 255) ? G : 255;

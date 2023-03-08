@@ -1,6 +1,6 @@
 import GameField from './game_field.js';
 import SoundPlayer from './sound_player.js';
-import { GAME_STATES, STACK_STATES, SOUNDS } from './constants.js';
+import { GAME_STATES, SOUNDS, STACK_STATES } from './constants.js';
 
 const {
   NEW, RUNNING, PAUSED, ENDING, ENDED,
@@ -22,11 +22,12 @@ export default class MyTetris {
 
   runGame(key) {
     switch (this.gameState) {
-      case NEW:
+      case NEW: {
         SoundPlayer.play(BACKGROUND_MUSIC);
         const countdownFinished = this.gameField.drawCountdown();
         countdownFinished ? this.gameState = RUNNING : NEW;
         break;
+      }
       case RUNNING:
         SoundPlayer.play(BACKGROUND_MUSIC);
         // this.runGame(key);
@@ -51,6 +52,9 @@ export default class MyTetris {
         SoundPlayer.pause(BACKGROUND_MUSIC);
         this.gameField.drawGameOverMessage();
         this.gameState = ENDED;
+        break;
+      default:
+        break;
     }
   }
 
@@ -76,7 +80,7 @@ export default class MyTetris {
   }
 
   increaseLevel() {
-    this.level++;
+    this.level += 1;
     this.gameField.drawText(this.gameField.ctxMain, 'Level up!', 2);
     document.getElementById('level').innerText = (this.level).toString();
   }
