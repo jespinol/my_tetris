@@ -1,18 +1,19 @@
 // Game state constants
 const NEW = 'new';
 const RUNNING = 'running';
+const UPDATING = "updating";
 const PAUSED = 'paused';
 const ENDING = 'ending';
 const ENDED = 'ended';
 const GAME_STATES = {
-  NEW, RUNNING, PAUSED, ENDING, ENDED,
+  NEW, RUNNING, UPDATING, PAUSED, ENDING, ENDED,
 };
 
 // Stack state constants
 const UNCHANGED = 'unchanged';
-const UPDATING = 'updating';
+const CHANGED = 'changed';
 const NOT_UPDATABLE = 'not updatable';
-const STACK_STATES = { UNCHANGED, UPDATING, NOT_UPDATABLE };
+const STACK_STATES = { UNCHANGED, CHANGED, NOT_UPDATABLE };
 
 // Side constants
 const LEFT = 'left';
