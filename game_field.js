@@ -1,7 +1,7 @@
 import Tetromino from './tetromino.js';
 import { SIDES, STACK_STATES, TURNS } from './constants.js';
 
-const { UNCHANGED, UPDATING, NOT_UPDATABLE } = STACK_STATES;
+const { UNCHANGED, NOT_UPDATABLE } = STACK_STATES;
 const {
   LEFT, RIGHT, UP, DOWN,
 } = SIDES;
@@ -36,6 +36,7 @@ export default class GameField {
   }
 
   updateField() {
+    // console.log(`needs update ${this.stackNeedsUpdate}`)
     this.clearCanvas();
     // draw the current stack
     this.drawTetromino(this.ctxMain, this.blockSize, this.gameField, null, 0, 0, false, true);
@@ -44,8 +45,7 @@ export default class GameField {
     // draw ghost tetromino
     const ghostPosition = this.calculateHardDrop(true);
     this.drawTetromino(this.ctxMain, this.blockSize, this.tetromino.shape, null, ghostPosition[0], ghostPosition[1], true);
-    // draw next tetromino and held tetromino, if there's one
-    // first calculate offsets to center tetrominoes
+    // draw next tetromino and held tetromino, if there's one first calculate offsets to center tetrominoes
     let [xPosOffset, yPosOffset] = GameField.getPosOffset(this.tetromino.next);
     this.drawTetromino(this.ctxNext, (this.blockSize / 1), this.tetromino.next.shape, this.tetromino.next.color, xPosOffset, yPosOffset, false);
     if (this.tetromino.held) {
@@ -55,9 +55,7 @@ export default class GameField {
     // check if a tetromino needs to be locked in the stack, if not possible the game is over and return false
     if (this.stackNeedsUpdate) {
       this.updateStack();
-      return;
     }
-    this.stackState = UNCHANGED;
   }
 
   updateStack() {
@@ -95,21 +93,19 @@ export default class GameField {
         break;
       case 'KeyX':
       case 'ArrowUp':
-        this.calculateRotation(CLOCKWISE_TURN);
+        this.calculateAndVerifyRotation(CLOCKWISE_TURN);
         break;
       case 'KeyZ':
       case 'ControlLeft':
-        this.calculateRotation(COUNTERCLOCKWISE_TURN);
+        this.calculateAndVerifyRotation(COUNTERCLOCKWISE_TURN);
         break;
       case 'Space':
         this.tetromino.yPos = this.calculateHardDrop()[1];
-        // this.hardDropPerformed = true;
         break;
       case 'KeyC':
       case 'ShiftLeft':
       case 'ShiftRight':
         this.tetromino.setHeld();
-        // this.updateField();
         break;
       case 'ArrowDown':
       case 'default':
@@ -168,23 +164,21 @@ export default class GameField {
     return [finalXPos, finalYPos];
   }
 
-  calculateRotation(direction) {
-    const previousShape = this.tetromino.shape;
-    let wallKickPossible;
+  calculateAndVerifyRotation(direction) {
+    const originalShape = this.tetromino.shape;
     switch (direction) {
       case CLOCKWISE_TURN:
-        this.tetromino.shape = previousShape[0].map((value, index) => previousShape.map((row) => row[index]).reverse());
+        this.tetromino.shape = originalShape[0].map((value, index) => originalShape.map((row) => row[index]).reverse());
         break;
       case COUNTERCLOCKWISE_TURN:
-        this.tetromino.shape = previousShape[0].map((value, index) => previousShape.map((row) => row[row.length - index - 1]));
+        this.tetromino.shape = originalShape[0].map((value, index) => originalShape.map((row) => row[row.length - index - 1]));
         break;
       default:
         break;
     }
     if (!this.isPositionValid()) {
-      wallKickPossible = this.canKickWall();
-      if (!wallKickPossible) {
-        this.tetromino.shape = previousShape;
+      if (!this.canKickWall()) {
+        this.tetromino.shape = originalShape;
       }
     }
   }
@@ -254,7 +248,12 @@ export default class GameField {
     return false;
   }
 
-  checkRows() {
+  clearRow(row) {
+    this.gameField.splice(row, 1);
+    this.gameField.unshift(Array(GameField.columns).fill([0, '']));
+  }
+
+  checkClearedRows() {
     let clearedRows = 0;
     for (let y = 0; y < GameField.rows; y++) {
       let row2clear = true;
@@ -265,8 +264,7 @@ export default class GameField {
         }
       }
       if (row2clear) {
-        this.gameField.splice(y, 1);
-        this.gameField.unshift(Array(GameField.columns).fill([0, '']));
+        this.clearRow(y);
         clearedRows += 1;
       }
     }
@@ -310,15 +308,6 @@ export default class GameField {
           location.lineWidth = 1;
           location.stroke();
         }
-        // debugging: paints empty blocks
-        // if (!isStack && !isGhost) {
-        //     if (cell === 0) {
-        //         location.beginPath()
-        //         location.roundRect((xPos + x) * size, (yPos + y) * size, size, size, [3]);
-        //         location.fillStyle = "white"
-        //         location.fill()
-        //     }
-        // }
       });
     });
   }
