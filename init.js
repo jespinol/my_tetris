@@ -2,7 +2,7 @@ import MyTetris from './my_tetris.js';
 import { GAME_STATES } from './constants.js';
 
 const {
-  NEW, RUNNING, PAUSED, ENDING, ENDED,
+  NEW, RUNNING, UPDATING, PAUSED, ENDED,
 } = GAME_STATES;
 
 export default function init() {
@@ -26,6 +26,7 @@ export default function init() {
       game.runGame(key);
     } else if (key === 'Enter' && game.gameState === PAUSED) {
       game.gameState = RUNNING;
+      game.animate();
       changePlayButton();
     }
     event.preventDefault();
@@ -57,7 +58,7 @@ export default function init() {
       default:
         break;
     }
-    requestAnimationFrame((timestamp) => game.animate(timestamp));
+    game.animate();
   });
 
   function changePlayButton() {
