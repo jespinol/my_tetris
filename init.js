@@ -1,8 +1,9 @@
 import MyTetris from './my_tetris.js';
 import { GAME_STATES } from './constants.js';
+import GameField from './game_field.js';
 
 const {
-  NEW, RUNNING, UPDATING, PAUSED, ENDED,
+  NEW, RUNNING, PAUSED, ENDED,
 } = GAME_STATES;
 
 export default function init() {
@@ -11,7 +12,7 @@ export default function init() {
   const holdCanvas = document.getElementById('holdCanvas');
   const nextCanvas = document.getElementById('nextCanvas');
   const blockSize = getBlockSizeSetCanvas();
-  const game = new MyTetris(gameCanvas, nextCanvas, holdCanvas, blockSize);
+  const game = new MyTetris(gameCanvas, nextCanvas, holdCanvas, blockSize, playButton);
 
   window.addEventListener('keydown', (event) => {
     const key = event.code;
@@ -19,23 +20,21 @@ export default function init() {
       return;
     } if (game.gameState === RUNNING) {
       if (key === 'Escape' || key === 'F1' || key === 'KeyP') {
-        game.gameState = PAUSED;
-        changePlayButton();
-        return;
+        game.switchGameStates(PAUSED);
+      } else {
+        game.runGame(key);
       }
-      game.runGame(key);
-    } else if (key === 'Enter' && game.gameState === PAUSED) {
-      game.gameState = RUNNING;
-      game.animate();
-      changePlayButton();
+    } else if (game.gameState === PAUSED) {
+      if (key === 'Enter') {
+        game.switchGameStates(RUNNING);
+      }
     }
     event.preventDefault();
   }, true);
 
   window.addEventListener('blur', () => {
     if (game.gameState === RUNNING) {
-      game.gameState = PAUSED;
-      changePlayButton();
+      game.switchGameStates(PAUSED);
     }
   });
 
@@ -43,43 +42,20 @@ export default function init() {
     switch (game.gameState) {
       case ENDED:
         location.reload();
-        return;
+        break;
       case RUNNING:
-        game.gameState = PAUSED;
-        changePlayButton();
+        game.switchGameStates(PAUSED);
         break;
       case PAUSED:
-        game.gameState = RUNNING;
-        changePlayButton();
+        game.switchGameStates(RUNNING);
         break;
       case NEW:
-        changePlayButton();
+        game.switchGameStates(NEW);
         break;
       default:
         break;
     }
-    game.animate();
   });
-
-  function changePlayButton() {
-    const currentState = game.gameState;
-    switch (currentState) {
-      case ENDED:
-        playButton.innerText = 'Try again';
-        playButton.classList.remove('btn-danger');
-        playButton.classList.add('btn-light');
-        break;
-      case PAUSED:
-        playButton.innerText = 'Continue';
-        playButton.classList.remove('btn-danger');
-        playButton.classList.add('btn-success');
-        break;
-      default:
-        playButton.innerText = 'Pause';
-        playButton.classList.remove('btn-primary');
-        playButton.classList.add('btn-danger');
-    }
-  }
 }
 
 function setCanvas(canvasId, width, height) {
@@ -88,12 +64,17 @@ function setCanvas(canvasId, width, height) {
 }
 
 function getBlockSizeSetCanvas() {
-  const blockSize = Math.round((window.innerHeight * 0.045) / 10) * 10;
-  const gameCanvasWidth = (blockSize * 20).toString();
-  const gameCanvasHeight = (blockSize * 44).toString();
-  const sideCanvasSize = (blockSize * 8).toString();
+  const blockSize = Math.round((window.innerHeight * 0.1) / 10) * 10;
+
+  const blocksInRow = blockSize * GameField.columns;
+  const gameCanvasWidth = blocksInRow.toString();
+  const blocksInCol = blockSize * GameField.rows;
+  const gameCanvasHeight = blocksInCol.toString();
+  const blocksInSide = blocksInRow * (40 / 100);
+  const sideCanvasSize = blocksInSide.toString();
+
   setCanvas('gameCanvas', gameCanvasWidth, gameCanvasHeight);
   setCanvas('nextCanvas', sideCanvasSize, sideCanvasSize);
   setCanvas('holdCanvas', sideCanvasSize, sideCanvasSize);
-  return blockSize * 2;
+  return blockSize;
 }
