@@ -4,5 +4,4 @@
 .idea/my_tetris.iml
 .idea/vcs.xml
 .idea/
-resources/static/.DS_Store
-resources/static/.DS_Store
+**/.DS_Store
