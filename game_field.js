@@ -1,11 +1,17 @@
 import Tetromino from './tetromino.js';
-import { SIDES, STACK_STATES, TURNS } from './constants.js';
+import {
+  SIDES, STACK_STATES, TURNS, SOUNDS,
+} from './constants.js';
+import SoundPlayer from './sound_player.js';
 
 const { UNCHANGED, NOT_UPDATABLE } = STACK_STATES;
 const {
   LEFT, RIGHT, UP, DOWN,
 } = SIDES;
 const { CLOCKWISE_TURN, COUNTERCLOCKWISE_TURN } = TURNS;
+const {
+  CLEARED_ROW, HARD_DROP_SOUND, TETROMINO_LOCKED_SOUND, ON_EDGE_SOUND,
+} = SOUNDS;
 
 export default class GameField {
   static columns = 10;
@@ -30,8 +36,20 @@ export default class GameField {
   static getPosOffset(tetromino) {
     const shapeWidth = tetromino.shape[0].length;
     const shapeHeight = tetromino.shape.length;
-    const xPosOffset = shapeWidth > 3 ? 0 : shapeWidth > 2 ? 0.5 : 1;
-    const yPosOffset = shapeHeight > 3 ? 0.5 : 1;
+    let xPosOffset;
+    if (shapeWidth > 3) {
+      xPosOffset = 0;
+    } else if (shapeWidth > 2) {
+      xPosOffset = 0.5;
+    } else {
+      xPosOffset = 1;
+    }
+    let yPosOffset;
+    if (shapeHeight > 3) {
+      yPosOffset = 0.5;
+    } else {
+      yPosOffset = 1;
+    }
     return [xPosOffset, yPosOffset];
   }
 
@@ -43,7 +61,7 @@ export default class GameField {
     // draw current tetromino
     this.drawTetromino(this.ctxMain, this.blockSize, this.tetromino.shape, this.tetromino.color, this.tetromino.xPos, this.tetromino.yPos, false);
     // draw ghost tetromino
-    const ghostPosition = this.calculateHardDrop(true);
+    const ghostPosition = this.calculateHardDrop();
     this.drawTetromino(this.ctxMain, this.blockSize, this.tetromino.shape, null, ghostPosition[0], ghostPosition[1], true);
     // draw next tetromino and held tetromino, if there's one first calculate offsets to center tetrominoes
     let [xPosOffset, yPosOffset] = GameField.getPosOffset(this.tetromino.next);
@@ -55,6 +73,7 @@ export default class GameField {
     // check if a tetromino needs to be locked in the stack, if not possible the game is over and return false
     if (this.stackNeedsUpdate) {
       this.updateStack();
+      this.checkTopmostOccupiedRow();
     }
   }
 
@@ -63,7 +82,7 @@ export default class GameField {
     this.tetromino.shape.forEach((row, y) => {
       row.forEach((cellValue, x) => {
         if (cellValue === 1) {
-          if ((this.tetromino.yPos + y) <= 0) {
+          if ((this.tetromino.yPos + y) < 0) {
             this.stackState = NOT_UPDATABLE;
             return;
           }
@@ -74,17 +93,19 @@ export default class GameField {
     this.tetromino.setCurrentAndNext();
   }
 
-  updatePos(key = 'default') {
+  updatePos(direction = 'default') {
     const { yPos } = this.tetromino;
     const { xPos } = this.tetromino;
     let moveValid;
-    switch (key) {
+    switch (direction) {
+      case LEFT:
       case 'ArrowLeft':
         moveValid = this.isPositionValid(yPos, xPos - 1);
         if (moveValid) {
           this.tetromino.xPos -= 1;
         }
         break;
+      case RIGHT:
       case 'ArrowRight':
         moveValid = this.isPositionValid(yPos, xPos + 1);
         if (moveValid) {
@@ -101,18 +122,23 @@ export default class GameField {
         break;
       case 'Space':
         this.tetromino.yPos = this.calculateHardDrop()[1];
+        this.stackNeedsUpdate = true;
+        this.tetromino.canHold = true;
+        SoundPlayer.play(HARD_DROP_SOUND);
         break;
       case 'KeyC':
       case 'ShiftLeft':
       case 'ShiftRight':
         this.tetromino.setHeld();
         break;
+      case DOWN:
       case 'ArrowDown':
       case 'default':
         moveValid = this.isPositionValid(yPos + 1, xPos);
         if (moveValid) {
           this.tetromino.yPos += 1;
         } else {
+          SoundPlayer.play(TETROMINO_LOCKED_SOUND);
           this.stackNeedsUpdate = true;
           this.tetromino.canHold = true;
         }
@@ -123,23 +149,32 @@ export default class GameField {
     return true;
   }
 
-  isPositionValid(yPos = this.tetromino.yPos, xPos = this.tetromino.xPos) {
+  getTetrominoPosRelativeToField(xPos, yPos) {
     const colStart = xPos + this.tetromino.getPosSolidBlockOnSide(LEFT);
     const colEnd = xPos + this.tetromino.getPosSolidBlockOnSide(RIGHT);
     const rowStart = yPos + this.tetromino.getPosSolidBlockOnSide(UP);
     const rowEnd = yPos + this.tetromino.getPosSolidBlockOnSide(DOWN);
+    return {
+      colStart, colEnd, rowStart, rowEnd,
+    };
+  }
+
+  isPositionValid(yPos = this.tetromino.yPos, xPos = this.tetromino.xPos) {
+    const posRelativeToField = this.getTetrominoPosRelativeToField(xPos, yPos);
+    const { colStart } = posRelativeToField;
+    const { colEnd } = posRelativeToField;
+    const { rowStart } = posRelativeToField;
+    const { rowEnd } = posRelativeToField;
     // checks that the tetromino is within game area
     if (colStart < 0 || colEnd >= GameField.columns || rowEnd >= GameField.rows) {
       return false;
     }
-    // checks that the tetromino would not be on a cell that's already occupied
-    if (yPos >= 0 && ((yPos + this.tetromino.getPosSolidBlockOnSide(DOWN)) < GameField.rows)) {
-      for (let y = rowStart, y_ = rowStart - yPos; y <= rowEnd; y++, y_++) {
-        for (let x = colStart, x_ = colStart - xPos; x <= colEnd; x++, x_++) {
-          if (y < GameField.rows && x < GameField.columns && x >= 0) {
-            if (this.gameField[y][x][0] === 1 && this.tetromino.shape[y_][x_] === 1) {
-              return false;
-            }
+    // checks if the tetromino would be in a space that's already occupied
+    for (let y = rowStart, y_ = rowStart - yPos; y <= rowEnd; y++, y_++) {
+      for (let x = colStart, x_ = colStart - xPos; x <= colEnd; x++, x_++) {
+        if (y < GameField.rows && y >= 0 && x < GameField.columns && x >= 0) {
+          if (this.gameField[y][x][0] === 1 && this.tetromino.shape[y_][x_] === 1) {
+            return false;
           }
         }
       }
@@ -147,7 +182,7 @@ export default class GameField {
     return true;
   }
 
-  calculateHardDrop(isGhost = false) {
+  calculateHardDrop() {
     let validPosition = true;
     const finalXPos = this.tetromino.xPos;
     let finalYPos = this.tetromino.yPos;
@@ -156,10 +191,6 @@ export default class GameField {
       if (validPosition) {
         finalYPos += 1;
       }
-    }
-    if (!isGhost) {
-      this.stackNeedsUpdate = true;
-      this.tetromino.canHold = true;
     }
     return [finalXPos, finalYPos];
   }
@@ -248,33 +279,45 @@ export default class GameField {
     return false;
   }
 
-  clearRow(row) {
-    this.gameField.splice(row, 1);
-    this.gameField.unshift(Array(GameField.columns).fill([0, '']));
+  checkTopmostOccupiedRow() {
+    let topMostOccupiedRow = GameField.rows;
+    for (let y = 0; y < GameField.rows; y++) {
+      for (let cell = 0; cell < this.gameField[y].length; cell++) {
+        if (this.gameField[y][cell][0] === 1) {
+          topMostOccupiedRow -= 1;
+          break;
+        }
+      }
+    }
+    if (topMostOccupiedRow <= 7) {
+      SoundPlayer.playWithVaryingVolRate(ON_EDGE_SOUND, topMostOccupiedRow);
+    } else {
+      SoundPlayer.pause(ON_EDGE_SOUND);
+    }
+  }
+
+  static clearRow(gameField, row) {
+    gameField.splice(row, 1);
+    gameField.unshift(Array(GameField.columns).fill([0, '']));
   }
 
   checkClearedRows() {
     let clearedRows = 0;
-    for (let y = 0; y < GameField.rows; y++) {
-      let row2clear = true;
-      for (let cell = 0; cell < this.gameField[y].length; cell++) {
-        if (this.gameField[y][cell][0] === 0) {
-          row2clear = false;
+    for (let row = 0; row < GameField.rows; row++) {
+      let rowIsComplete = true;
+      for (let cell = 0; cell < this.gameField[row].length; cell++) {
+        if (this.gameField[row][cell][0] === 0) {
+          rowIsComplete = false;
           break;
         }
       }
-      if (row2clear) {
-        this.clearRow(y);
+      if (rowIsComplete) {
+        GameField.clearRow(this.gameField, row);
+        SoundPlayer.play(CLEARED_ROW);
         clearedRows += 1;
       }
     }
-    const tetris = Math.floor(clearedRows / 4);
-    clearedRows %= 4;
-    const triple = Math.floor(clearedRows / 3);
-    clearedRows %= 3;
-    const double = Math.floor(clearedRows / 2);
-    const single = clearedRows % 2;
-    return (tetris * 8) + (triple * 5) + (double * 3) + (single);
+    return clearedRows;
   }
 
   clearCanvas(providedLocation) {
@@ -312,25 +355,26 @@ export default class GameField {
     });
   }
 
-  count = 1;
+  count = 3;
 
   drawCountdown() {
     this.clearCanvas(this.ctxMain);
-    this.drawText(this.ctxMain, this.count.toString(), 10);
+    this.drawText(this.ctxMain, this.count.toString(), 5);
     this.count -= 1;
     return this.count < 1;
   }
 
   drawGameOverMessage() {
-    this.drawText(this.ctxMain, 'Game Over', 5);
+    this.drawText(this.ctxMain, 'Game Over', 2, "#FF0000");
   }
 
   drawPausedMessage() {
-    this.drawText(this.ctxMain, 'Paused', 5);
+    this.clearCanvas(this.ctxMain);
+    this.drawText(this.ctxMain, 'Paused', 2);
   }
 
-  drawText(location, text, sizeMultiplier = 0, color = '#FFFFFF') {
-    location.font = `${30 * sizeMultiplier}px Arial`;
+  drawText(location, text, sizeMultiplier = 1, color = '#FFFFFF') {
+    location.font = `${this.blockSize * sizeMultiplier}px Arial`;
     location.fillStyle = color;
     location.textAlign = 'center';
     location.fillText(text, location.canvas.width / 2, location.canvas.height / 2);
