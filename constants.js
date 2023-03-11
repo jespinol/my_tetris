@@ -30,9 +30,14 @@ const COUNTERCLOCKWISE_TURN = 'counter-clockwise turn';
 const TURNS = { CLOCKWISE_TURN, COUNTERCLOCKWISE_TURN };
 
 // Sound constants
-const BACKGROUND_MUSIC = new Audio('resources/static/sounds/TwisterTetris_poinl.mp3');
+const BACKGROUND_MUSIC = new Audio('resources/static/sounds/TwisterTetris_poinl.mp3'); //opengameart.org
+const CLEARED_ROW_SOUND = new Audio('resources/static/sounds/button-46.wav') //gamesounds.xyz
+const HARD_DROP_SOUND = new Audio('resources/static/sounds/switch-1.wav') //gamesounds.xyz
+const TETROMINO_LOCKED_SOUND = new Audio('resources/static/sounds/button-50.wav') //gamesounds.xyz
+const LEVEL_UP_SOUND = new Audio('resources/static/sounds/8bit_status_point_9.wav') //gamesounds.xyz
+const ON_EDGE_SOUND = new Audio('resources/static/sounds/clock-ticking-4.wav') //gamesounds.xyz
 
-const SOUNDS = { BACKGROUND_MUSIC };
+const SOUNDS = { BACKGROUND_MUSIC, CLEARED_ROW: CLEARED_ROW_SOUND, HARD_DROP_SOUND, TETROMINO_LOCKED_SOUND, LEVEL_UP_SOUND, ON_EDGE_SOUND };
 
 export {
   GAME_STATES, STACK_STATES, SIDES, TURNS, SOUNDS,
