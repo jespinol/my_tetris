@@ -25,7 +25,7 @@ export default class MyTetris {
   runGame(key) {
     switch (this.gameState) {
       case NEW: {
-        SoundPlayer.play(BACKGROUND_MUSIC, 0.5, true);
+        SoundPlayer.play(BACKGROUND_MUSIC, true);
         const countdownFinished = this.gameField.drawCountdown();
         if (countdownFinished) {
           this.gameState = RUNNING;
@@ -33,7 +33,7 @@ export default class MyTetris {
         break;
       }
       case RUNNING:
-        SoundPlayer.play(BACKGROUND_MUSIC, 0.5, true);
+        SoundPlayer.play(BACKGROUND_MUSIC, true);
         this.gameField.updatePos(key);
         this.gameField.updateField();
         if (this.gameField.stackState === NOT_UPDATABLE) {

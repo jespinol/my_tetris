@@ -19,12 +19,12 @@ export default class GameField {
   static rows = 22;
 
   constructor(mainCanvasId, nextCanvasId, holdCanvasId, blockSize) {
+    this.gameField = GameField.createEmptyGameField();
+    this.tetromino = new Tetromino();
+    this.blockSize = blockSize;
     this.ctxMain = mainCanvasId.getContext('2d');
     this.ctxNext = nextCanvasId.getContext('2d');
     this.ctxHold = holdCanvasId.getContext('2d');
-    this.blockSize = blockSize;
-    this.tetromino = new Tetromino();
-    this.gameField = GameField.createEmptyGameField();
     this.stackNeedsUpdate = false;
     this.stackState = UNCHANGED;
   }
@@ -59,31 +59,33 @@ export default class GameField {
     // draw the current stack
     this.drawTetromino(this.ctxMain, this.blockSize, this.gameField, null, 0, 0, false, true);
     // draw current tetromino
-    this.drawTetromino(this.ctxMain, this.blockSize, this.tetromino.shape, this.tetromino.color, this.tetromino.xPos, this.tetromino.yPos, false);
+    this.drawTetromino(this.ctxMain, this.blockSize, this.tetromino.shape, this.tetromino.color, this.tetromino.xPos, this.tetromino.yPos);
     // draw ghost tetromino
-    const ghostPosition = this.calculateHardDrop();
-    this.drawTetromino(this.ctxMain, this.blockSize, this.tetromino.shape, null, ghostPosition[0], ghostPosition[1], true);
-    // draw next tetromino and held tetromino, if there's one first calculate offsets to center tetrominoes
-    let [xPosOffset, yPosOffset] = GameField.getPosOffset(this.tetromino.next);
-    this.drawTetromino(this.ctxNext, (this.blockSize / 1), this.tetromino.next.shape, this.tetromino.next.color, xPosOffset, yPosOffset, false);
+    const [ghostX, ghostY] = this.calculateHardDrop();
+    this.drawTetromino(this.ctxMain, this.blockSize, this.tetromino.shape, null, ghostX, ghostY, true);
+    // draw next tetromino and held tetromino, first calculate offsets to center tetrominoes
+    let [offsetX, offsetY] = GameField.getPosOffset(this.tetromino.next);
+    this.drawTetromino(this.ctxNext, this.blockSize, this.tetromino.next.shape, this.tetromino.next.color, offsetX, offsetY);
     if (this.tetromino.held) {
-      [xPosOffset, yPosOffset] = GameField.getPosOffset(this.tetromino.held);
-      this.drawTetromino(this.ctxHold, (this.blockSize / 1), this.tetromino.held.shape, this.tetromino.held.color, xPosOffset, yPosOffset, false);
+      [offsetX, offsetY] = GameField.getPosOffset(this.tetromino.held);
+      this.drawTetromino(this.ctxHold, this.blockSize, this.tetromino.held.shape, this.tetromino.held.color, offsetX, offsetY);
     }
-    // check if a tetromino needs to be locked in the stack, if not possible the game is over and return false
+    // check if a tetromino needs to be locked in the stack
+    // if it's not possible the game is over and return false
     if (this.stackNeedsUpdate) {
       this.updateStack();
+      this.tetromino.setCurrentAndNext();
       const topOccupiedRow = GameField.getTopOccupiedRow(this.gameField);
       if (topOccupiedRow <= 7) {
         SoundPlayer.playOnEdgeFX(ON_EDGE_SOUND, topOccupiedRow);
       } else {
         SoundPlayer.pause(ON_EDGE_SOUND);
       }
+      this.stackNeedsUpdate = false;
     }
   }
 
   updateStack() {
-    this.stackNeedsUpdate = false;
     this.tetromino.shape.forEach((row, y) => {
       row.forEach((cellValue, x) => {
         if (cellValue === 1) {
@@ -95,7 +97,6 @@ export default class GameField {
         }
       });
     });
-    this.tetromino.setCurrentAndNext();
   }
 
   updatePos(direction = 'default') {
@@ -103,14 +104,12 @@ export default class GameField {
     const { xPos } = this.tetromino;
     let moveValid;
     switch (direction) {
-      case LEFT:
       case 'ArrowLeft':
         moveValid = this.isPositionValid(yPos, xPos - 1);
         if (moveValid) {
           this.tetromino.xPos -= 1;
         }
         break;
-      case RIGHT:
       case 'ArrowRight':
         moveValid = this.isPositionValid(yPos, xPos + 1);
         if (moveValid) {
@@ -136,7 +135,6 @@ export default class GameField {
       case 'ShiftRight':
         this.tetromino.setHeld();
         break;
-      case DOWN:
       case 'ArrowDown':
       case 'default':
         moveValid = this.isPositionValid(yPos + 1, xPos);
@@ -285,15 +283,15 @@ export default class GameField {
   }
 
   static getTopOccupiedRow(gameField) {
-    let out;
+    let topOccupiedRow = 0;
     gameField.some((row, index) => {
       if (row.some((cell) => cell[0] === 1)) {
-        out = index;
+        topOccupiedRow = index;
         return true;
       }
       return false;
     });
-    return out;
+    return topOccupiedRow;
   }
 
   static clearRow(gameField, row) {
@@ -330,7 +328,7 @@ export default class GameField {
     }
   }
 
-  drawTetromino(location, size, shape, color, xPos, yPos, isGhost, isStack) {
+  drawTetromino(location, size, shape, color, xPos, yPos, isGhost = false, isStack = false) {
     shape.forEach((row, y) => {
       row.forEach((cell, x) => {
         if (isStack ? cell[0] === 1 : cell === 1) {

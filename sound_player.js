@@ -1,5 +1,5 @@
 export default class SoundPlayer {
-  static async play(sound, volumeLevel = 0.5, doLoop = false) {
+  static async play(sound, doLoop = false, volumeLevel = 0.5) {
     sound.volume = volumeLevel;
     sound.loop = doLoop;
     await sound.play();
@@ -27,7 +27,6 @@ export default class SoundPlayer {
     }, 50);
   }
 
-  static playWithVaryingVolRate(sound, currentRow) {
   static playOnEdgeFX(sound, currentRow) {
     const maxVolume = 2.0;
     const maxRate = 2.0;

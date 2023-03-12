@@ -10,10 +10,9 @@ const GAME_STATES = {
 };
 
 // Stack state constants
-const UNCHANGED = 'unchanged';
-const CHANGED = 'changed';
+const OK = 'unchanged';
 const NOT_UPDATABLE = 'not updatable';
-const STACK_STATES = { UNCHANGED, CHANGED, NOT_UPDATABLE };
+const STACK_STATES = { OK, NOT_UPDATABLE };
 
 // Side constants
 const LEFT = 'left';

@@ -7,31 +7,32 @@ const {
 export default class Tetromino {
   static tetrominoes = {
     l: {
-      shape: [[0, 0, 1], [1, 1, 1], [0, 0, 0]], color: '#FFA366', xPos: 3, yPos: -2,
+      shape: [[0, 0, 1], [1, 1, 1], [0, 0, 0]], color: '#FFA366', xStart: 3, yStart: -2,
     }, // Orange Ricky
     j: {
-      shape: [[1, 0, 0], [1, 1, 1], [0, 0, 0]], color: '#0099CC', xPos: 3, yPos: -2,
+      shape: [[1, 0, 0], [1, 1, 1], [0, 0, 0]], color: '#0099CC', xStart: 3, yStart: -2,
     }, // Blue Ricky
     z: {
-      shape: [[1, 1, 0], [0, 1, 1], [0, 0, 0]], color: '#FF5A5A', xPos: 3, yPos: -2,
+      shape: [[1, 1, 0], [0, 1, 1], [0, 0, 0]], color: '#FF5A5A', xStart: 3, yStart: -2,
     }, // Cleveland Z
     s: {
-      shape: [[0, 1, 1], [1, 1, 0], [0, 0, 0]], color: '#70C05A', xPos: 3, yPos: -2,
+      shape: [[0, 1, 1], [1, 1, 0], [0, 0, 0]], color: '#70C05A', xStart: 3, yStart: -2,
     }, // Rhode Island Z
     i: {
-      shape: [[0, 0, 0, 0], [1, 1, 1, 1], [0, 0, 0, 0], [0, 0, 0, 0]], color: '#97FFFF', xPos: 3, yPos: -3,
+      shape: [[0, 0, 0, 0], [1, 1, 1, 1], [0, 0, 0, 0], [0, 0, 0, 0]], color: '#97FFFF', xStart: 3, yStart: -3,
     }, // Hero
     t: {
-      shape: [[0, 1, 0], [1, 1, 1], [0, 0, 0]], color: '#A667E7', xPos: 3, yPos: -2,
+      shape: [[0, 1, 0], [1, 1, 1], [0, 0, 0]], color: '#A667E7', xStart: 3, yStart: -2,
     }, // Teewee
     o: {
-      shape: [[1, 1], [1, 1]], color: '#FFE066', xPos: 4, yPos: -2,
+      shape: [[1, 1], [1, 1]], color: '#FFE066', xStart: 4, yStart: -2,
     }, // Smashboy
   };
 
   constructor() {
-    this.nextTetrominoes = Tetromino.initTetrominoes();
+    this.listOfNextTretrominoes = Tetromino.initTetrominoes();
     this.current = null;
+    this.next = null;
     this.held = null;
     this.canHold = true;
     this.setCurrentAndNext();
@@ -56,15 +57,15 @@ export default class Tetromino {
       previousHeld = this.held;
       this.held = this.current;
     }
-    this.current = useHeld ? previousHeld : Tetromino.tetrominoes[this.nextTetrominoes.shift()];
-    this.xPos = this.current.xPos;
-    this.yPos = this.current.yPos;
+    this.current = useHeld ? previousHeld : Tetromino.tetrominoes[this.listOfNextTretrominoes.shift()];
+    this.xPos = this.current.xStart;
+    this.yPos = this.current.yStart;
     this.shape = this.current.shape;
     this.color = this.current.color;
     if (!useHeld) {
-      this.nextTetrominoes.push(Tetromino.selectRandomTetromino());
+      this.listOfNextTretrominoes.push(Tetromino.selectRandomTetromino());
     }
-    this.next = Tetromino.tetrominoes[this.nextTetrominoes[0]];
+    this.next = Tetromino.tetrominoes[this.listOfNextTretrominoes[0]];
   }
 
   setHeld() {
