@@ -28,6 +28,7 @@ export default class SoundPlayer {
   }
 
   static playWithVaryingVolRate(sound, currentRow) {
+  static playOnEdgeFX(sound, currentRow) {
     const maxVolume = 2.0;
     const maxRate = 2.0;
     sound.volume = (maxVolume / (currentRow + 2)).toFixed(1);

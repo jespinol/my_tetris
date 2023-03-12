@@ -10,7 +10,7 @@ const {
 } = SIDES;
 const { CLOCKWISE_TURN, COUNTERCLOCKWISE_TURN } = TURNS;
 const {
-  CLEARED_ROW, HARD_DROP_SOUND, TETROMINO_LOCKED_SOUND, ON_EDGE_SOUND,
+  CLEARED_ROW_SOUND, HARD_DROP_SOUND, TETROMINO_LOCKED_SOUND, ON_EDGE_SOUND,
 } = SOUNDS;
 
 export default class GameField {
@@ -73,7 +73,12 @@ export default class GameField {
     // check if a tetromino needs to be locked in the stack, if not possible the game is over and return false
     if (this.stackNeedsUpdate) {
       this.updateStack();
-      this.checkTopmostOccupiedRow();
+      const topOccupiedRow = GameField.getTopOccupiedRow(this.gameField);
+      if (topOccupiedRow <= 7) {
+        SoundPlayer.playOnEdgeFX(ON_EDGE_SOUND, topOccupiedRow);
+      } else {
+        SoundPlayer.pause(ON_EDGE_SOUND);
+      }
     }
   }
 
@@ -150,10 +155,10 @@ export default class GameField {
   }
 
   getTetrominoPosRelativeToField(xPos, yPos) {
-    const colStart = xPos + this.tetromino.getPosSolidBlockOnSide(LEFT);
-    const colEnd = xPos + this.tetromino.getPosSolidBlockOnSide(RIGHT);
-    const rowStart = yPos + this.tetromino.getPosSolidBlockOnSide(UP);
-    const rowEnd = yPos + this.tetromino.getPosSolidBlockOnSide(DOWN);
+    const colStart = xPos + Tetromino.getSolidBlockOnSideOffset(this.tetromino, LEFT);
+    const colEnd = xPos + Tetromino.getSolidBlockOnSideOffset(this.tetromino, RIGHT);
+    const rowStart = yPos + Tetromino.getSolidBlockOnSideOffset(this.tetromino, UP);
+    const rowEnd = yPos + Tetromino.getSolidBlockOnSideOffset(this.tetromino, DOWN);
     return {
       colStart, colEnd, rowStart, rowEnd,
     };
@@ -279,21 +284,16 @@ export default class GameField {
     return false;
   }
 
-  checkTopmostOccupiedRow() {
-    let topMostOccupiedRow = GameField.rows;
-    for (let y = 0; y < GameField.rows; y++) {
-      for (let cell = 0; cell < this.gameField[y].length; cell++) {
-        if (this.gameField[y][cell][0] === 1) {
-          topMostOccupiedRow -= 1;
-          break;
-        }
+  static getTopOccupiedRow(gameField) {
+    let out;
+    gameField.some((row, index) => {
+      if (row.some((cell) => cell[0] === 1)) {
+        out = index;
+        return true;
       }
-    }
-    if (topMostOccupiedRow <= 7) {
-      SoundPlayer.playWithVaryingVolRate(ON_EDGE_SOUND, topMostOccupiedRow);
-    } else {
-      SoundPlayer.pause(ON_EDGE_SOUND);
-    }
+      return false;
+    });
+    return out;
   }
 
   static clearRow(gameField, row) {
@@ -313,7 +313,7 @@ export default class GameField {
       }
       if (rowIsComplete) {
         GameField.clearRow(this.gameField, row);
-        SoundPlayer.play(CLEARED_ROW);
+        SoundPlayer.play(CLEARED_ROW_SOUND);
         clearedRows += 1;
       }
     }
@@ -355,29 +355,39 @@ export default class GameField {
     });
   }
 
-  count = 3;
-
-  drawCountdown() {
-    this.clearCanvas(this.ctxMain);
-    this.drawText(this.ctxMain, this.count.toString(), 5);
-    this.count -= 1;
-    return this.count < 1;
-  }
-
-  drawGameOverMessage() {
-    this.drawText(this.ctxMain, 'Game Over', 2, "#FF0000");
-  }
-
-  drawPausedMessage() {
-    this.clearCanvas(this.ctxMain);
-    this.drawText(this.ctxMain, 'Paused', 2);
-  }
-
   drawText(location, text, sizeMultiplier = 1, color = '#FFFFFF') {
     location.font = `${this.blockSize * sizeMultiplier}px Arial`;
     location.fillStyle = color;
     location.textAlign = 'center';
     location.fillText(text, location.canvas.width / 2, location.canvas.height / 2);
+  }
+
+  count = 2;
+
+  drawCountdown() {
+    this.clearCanvas(this.ctxMain);
+    const fontSize = this.blockSize * 5;
+    GameField.addTextToCanvas(this.ctxMain, this.count, fontSize);
+    this.count -= 1;
+    return this.count < 1;
+  }
+
+  drawGameOverMessage() {
+    const fontSize = this.blockSize * 2;
+    GameField.addTextToCanvas(this.ctxMain, 'Game Over', fontSize, '#FF0000');
+  }
+
+  drawPausedMessage() {
+    this.clearCanvas(this.ctxMain);
+    const fontSize = this.blockSize * 2;
+    GameField.addTextToCanvas(this.ctxMain, 'Paused', fontSize);
+  }
+
+  static addTextToCanvas(ctx, text, fontSize, color = '#FFFFFF') {
+    ctx.font = `${fontSize}px Arial`;
+    ctx.fillStyle = color;
+    ctx.textAlign = 'center';
+    ctx.fillText(text, ctx.canvas.width / 2, ctx.canvas.height / 2);
   }
 
   static shadeColor(color, percent) { // adapted from https://stackoverflow.com/a/13532993

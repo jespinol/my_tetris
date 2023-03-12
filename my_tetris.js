@@ -14,7 +14,6 @@ export default class MyTetris {
     this.playButton = playButton;
     this.gameState = NEW;
     this.speed = 1000;
-    this.tempSpeed = this.speed;
     this.levelPoints = 0;
     this.level = 1;
     this.points = 0;
@@ -26,7 +25,7 @@ export default class MyTetris {
   runGame(key) {
     switch (this.gameState) {
       case NEW: {
-        SoundPlayer.play(BACKGROUND_MUSIC, 0.3, true);
+        SoundPlayer.play(BACKGROUND_MUSIC, 0.5, true);
         const countdownFinished = this.gameField.drawCountdown();
         if (countdownFinished) {
           this.gameState = RUNNING;
@@ -34,16 +33,17 @@ export default class MyTetris {
         break;
       }
       case RUNNING:
-        SoundPlayer.play(BACKGROUND_MUSIC, 0.3, true);
+        SoundPlayer.play(BACKGROUND_MUSIC, 0.5, true);
         this.gameField.updatePos(key);
         this.gameField.updateField();
         if (this.gameField.stackState === NOT_UPDATABLE) {
           this.switchGameStates(ENDING);
         } else {
-          const canLevelUp = this.updatePoints();
+          this.updatePoints();
+          const canLevelUp = this.levelPoints >= (10 * this.level);
           if (canLevelUp) {
-            this.increaseLevel();
-            this.increaseSpeed();
+            this.level = this.increaseLevel(this.level);
+            this.speed = MyTetris.calculateSpeed(this.level);
           }
         }
         break;
@@ -58,7 +58,7 @@ export default class MyTetris {
         this.gameField.drawGameOverMessage();
         this.gameState = ENDED;
         this.changePlayButton();
-        this.stopAnimation();
+        this.switchAnimationState(false);
         break;
       default:
         break;
@@ -70,11 +70,11 @@ export default class MyTetris {
       this.tempSpeed = this.speed;
       this.speed = newSpeed;
     }
-    this.stopAnimation();
+    this.switchAnimationState(false);
     this.lastRender = -1;
     this.gameState = newState;
     this.changePlayButton();
-    this.startAnimation();
+    this.switchAnimationState(true);
   }
 
   changePlayButton() {
@@ -96,14 +96,14 @@ export default class MyTetris {
     }
   }
 
-  stopAnimation() {
-    this.animationActive = false;
-    cancelAnimationFrame(this.animationReference);
-  }
-
-  startAnimation() {
-    this.animationActive = true;
-    this.animationReference = requestAnimationFrame((timestamp) => this.animate(timestamp));
+  switchAnimationState(startAnimation) {
+    if (startAnimation === false) {
+      this.animationActive = false;
+      cancelAnimationFrame(this.animationReference);
+    } else {
+      this.animationActive = true;
+      this.animationReference = requestAnimationFrame((timestamp) => this.animate(timestamp));
+    }
   }
 
   animate(timestamp) {
@@ -120,30 +120,30 @@ export default class MyTetris {
     }
   }
 
-  calculatePoints(clearedRowNum, level) {
-    const pointsPerClearedRow = {1: 40, 2: 100, 3: 300, 4: 1200};
-    return pointsPerClearedRow[clearedRowNum] * level;
-  }
-
   updatePoints() {
     const clearedRowNum = this.gameField.checkClearedRows();
     if (clearedRowNum > 0) {
       this.levelPoints += clearedRowNum;
-      this.points += this.calculatePoints(clearedRowNum, this.level);
+      this.points += MyTetris.calculatePoints(clearedRowNum, this.level);
       document.getElementById('score').innerText = (this.points).toString();
-      return this.levelPoints >= (10 * this.level);
     }
-    return false;
   }
 
-  increaseLevel() {
-    this.level += 1;
+  increaseLevel(level) {
     SoundPlayer.play(LEVEL_UP_SOUND);
-    this.gameField.drawText(this.gameField.ctxMain, 'Level up!', 0.8);
+    GameField.addTextToCanvas(this.gameField.ctxMain, 'Level up!', this.gameField.blockSize * 0.8);
     document.getElementById('level').innerText = (this.level).toString();
+    return level + 1;
   }
 
-  increaseSpeed() {
-    this.speed = 1000 * (0.9 - (this.level - 1) * 0.007) ** (this.level - 1);
+  static calculatePoints(clearedRowNum, level) {
+    const pointsPerClearedRow = {
+      1: 40, 2: 100, 3: 300, 4: 1200,
+    };
+    return pointsPerClearedRow[clearedRowNum] * level;
+  }
+
+  static calculateSpeed(level) {
+    return 1000 * (0.9 - (level - 1) * 0.007) ** (level - 1);
   }
 }
