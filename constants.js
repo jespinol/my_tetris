@@ -10,7 +10,7 @@ const GAME_STATES = {
 };
 
 // Stack state constants
-const OK = 'unchanged';
+const OK = 'ok';
 const NOT_UPDATABLE = 'not updatable';
 const STACK_STATES = { OK, NOT_UPDATABLE };
 

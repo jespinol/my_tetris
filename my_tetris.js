@@ -1,16 +1,16 @@
-import GameField from './game_field.js';
+import Board from './board.js';
 import SoundPlayer from './sound_player.js';
 import { GAME_STATES, SOUNDS, STACK_STATES } from './constants.js';
 
 const {
   NEW, RUNNING, UPDATING, PAUSED, ENDING, ENDED,
 } = GAME_STATES;
-const { NOT_UPDATABLE, CHANGED, UNCHANGED } = STACK_STATES;
+const { OK, NOT_UPDATABLE } = STACK_STATES;
 const { BACKGROUND_MUSIC, LEVEL_UP_SOUND, ON_EDGE_SOUND } = SOUNDS;
 
 export default class MyTetris {
   constructor(mainCanvasId, nextCanvasId, holdCanvasId, blockSize, playButton) {
-    this.gameField = new GameField(mainCanvasId, nextCanvasId, holdCanvasId, blockSize);
+    this.gameField = new Board(mainCanvasId, nextCanvasId, holdCanvasId, blockSize);
     this.playButton = playButton;
     this.gameState = NEW;
     this.speed = 1000;
@@ -131,7 +131,7 @@ export default class MyTetris {
 
   increaseLevel(level) {
     SoundPlayer.play(LEVEL_UP_SOUND);
-    GameField.addTextToCanvas(this.gameField.ctxMain, 'Level up!', this.gameField.blockSize * 0.8);
+    Board.addTextToCanvas(this.gameField.ctxMain, 'Level up!', this.gameField.blockSize * 0.8);
     document.getElementById('level').innerText = (this.level).toString();
     return level + 1;
   }

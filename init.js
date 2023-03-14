@@ -1,6 +1,6 @@
 import MyTetris from './my_tetris.js';
 import { GAME_STATES } from './constants.js';
-import GameField from './game_field.js';
+import Board from './board.js';
 
 const {
   NEW, RUNNING, PAUSED, ENDED,
@@ -14,9 +14,9 @@ function setCanvas(canvasId, width, height) {
 function getBlockSizeSetCanvas() {
   const blockSize = Math.round((window.innerHeight * 0.1) / 10) * 10;
 
-  const blocksInRow = blockSize * GameField.columns;
+  const blocksInRow = blockSize * Board.columns;
   const gameCanvasWidth = blocksInRow.toString();
-  const blocksInCol = blockSize * GameField.rows;
+  const blocksInCol = blockSize * Board.rows;
   const gameCanvasHeight = blocksInCol.toString();
   const blocksInSide = blocksInRow * (40 / 100);
   const sideCanvasSize = blocksInSide.toString();

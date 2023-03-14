@@ -4,7 +4,7 @@ import {
 } from './constants.js';
 import SoundPlayer from './sound_player.js';
 
-const { UNCHANGED, NOT_UPDATABLE } = STACK_STATES;
+const { OK, NOT_UPDATABLE } = STACK_STATES;
 const {
   LEFT, RIGHT, UP, DOWN,
 } = SIDES;
@@ -13,27 +13,28 @@ const {
   CLEARED_ROW_SOUND, HARD_DROP_SOUND, TETROMINO_LOCKED_SOUND, ON_EDGE_SOUND,
 } = SOUNDS;
 
-export default class GameField {
+export default class Board {
   static columns = 10;
 
   static rows = 22;
 
   constructor(mainCanvasId, nextCanvasId, holdCanvasId, blockSize) {
-    this.gameField = GameField.createEmptyGameField();
-    this.tetromino = new Tetromino();
     this.blockSize = blockSize;
     this.ctxMain = mainCanvasId.getContext('2d');
     this.ctxNext = nextCanvasId.getContext('2d');
     this.ctxHold = holdCanvasId.getContext('2d');
+    this.gameField = Board.createEmptyGameField();
+    this.tetrominoes = new Tetromino();
+    this.tetrominoOnBoard = Board.setTetrominoOnBoard(this.tetrominoes.current);
     this.stackNeedsUpdate = false;
-    this.stackState = UNCHANGED;
+    this.stackState = OK;
   }
 
   static createEmptyGameField() {
-    return Array.from({ length: GameField.rows }, () => Array(GameField.columns).fill([0, '']));
+    return Array.from({ length: Board.rows }, () => Array(Board.columns).fill([0, '']));
   }
 
-  static getPosOffset(tetromino) {
+  static getPosOffsetForSideCanvas(tetromino) {
     const shapeWidth = tetromino.shape[0].length;
     const shapeHeight = tetromino.shape.length;
     let xPosOffset;
@@ -53,29 +54,33 @@ export default class GameField {
     return [xPosOffset, yPosOffset];
   }
 
+  static setTetrominoOnBoard(tetromino) {
+    return { ...tetromino };
+  }
+
   updateField() {
-    // console.log(`needs update ${this.stackNeedsUpdate}`)
     this.clearCanvas();
     // draw the current stack
     this.drawTetromino(this.ctxMain, this.blockSize, this.gameField, null, 0, 0, false, true);
     // draw current tetromino
-    this.drawTetromino(this.ctxMain, this.blockSize, this.tetromino.shape, this.tetromino.color, this.tetromino.xPos, this.tetromino.yPos);
+    this.drawTetromino(this.ctxMain, this.blockSize, this.tetrominoOnBoard.shape, this.tetrominoOnBoard.color, this.tetrominoOnBoard.xPos, this.tetrominoOnBoard.yPos);
     // draw ghost tetromino
-    const [ghostX, ghostY] = this.calculateHardDrop();
-    this.drawTetromino(this.ctxMain, this.blockSize, this.tetromino.shape, null, ghostX, ghostY, true);
+    const [ghostX, ghostY] = this.calculateHardDrop(this.tetrominoOnBoard);
+    this.drawTetromino(this.ctxMain, this.blockSize, this.tetrominoOnBoard.shape, null, ghostX, ghostY, true);
     // draw next tetromino and held tetromino, first calculate offsets to center tetrominoes
-    let [offsetX, offsetY] = GameField.getPosOffset(this.tetromino.next);
-    this.drawTetromino(this.ctxNext, this.blockSize, this.tetromino.next.shape, this.tetromino.next.color, offsetX, offsetY);
-    if (this.tetromino.held) {
-      [offsetX, offsetY] = GameField.getPosOffset(this.tetromino.held);
-      this.drawTetromino(this.ctxHold, this.blockSize, this.tetromino.held.shape, this.tetromino.held.color, offsetX, offsetY);
+    let [offsetX, offsetY] = Board.getPosOffsetForSideCanvas(this.tetrominoes.next);
+    this.drawTetromino(this.ctxNext, this.blockSize, this.tetrominoes.next.shape, this.tetrominoes.next.color, offsetX, offsetY);
+    if (this.tetrominoes.held) {
+      [offsetX, offsetY] = Board.getPosOffsetForSideCanvas(this.tetrominoes.held);
+      this.drawTetromino(this.ctxHold, this.blockSize, this.tetrominoes.held.shape, this.tetrominoes.held.color, offsetX, offsetY);
     }
     // check if a tetromino needs to be locked in the stack
     // if it's not possible the game is over and return false
     if (this.stackNeedsUpdate) {
       this.updateStack();
-      this.tetromino.setCurrentAndNext();
-      const topOccupiedRow = GameField.getTopOccupiedRow(this.gameField);
+      this.tetrominoes.setCurrentAndNext();
+      this.tetrominoOnBoard = Board.setTetrominoOnBoard(this.tetrominoes.current);
+      const topOccupiedRow = Board.getTopOccupiedRow(this.gameField);
       if (topOccupiedRow <= 7) {
         SoundPlayer.playOnEdgeFX(ON_EDGE_SOUND, topOccupiedRow);
       } else {
@@ -86,34 +91,34 @@ export default class GameField {
   }
 
   updateStack() {
-    this.tetromino.shape.forEach((row, y) => {
+    this.tetrominoOnBoard.shape.forEach((row, y) => {
       row.forEach((cellValue, x) => {
         if (cellValue === 1) {
-          if ((this.tetromino.yPos + y) < 0) {
+          if ((this.tetrominoOnBoard.yPos + y) < 0) {
             this.stackState = NOT_UPDATABLE;
             return;
           }
-          this.gameField[this.tetromino.yPos + y][this.tetromino.xPos + x] = [1, this.tetromino.color];
+          this.gameField[this.tetrominoOnBoard.yPos + y][this.tetrominoOnBoard.xPos + x] = [1, this.tetrominoOnBoard.color];
         }
       });
     });
   }
 
   updatePos(direction = 'default') {
-    const { yPos } = this.tetromino;
-    const { xPos } = this.tetromino;
+    const { yPos } = this.tetrominoOnBoard;
+    const { xPos } = this.tetrominoOnBoard;
     let moveValid;
     switch (direction) {
       case 'ArrowLeft':
         moveValid = this.isPositionValid(yPos, xPos - 1);
         if (moveValid) {
-          this.tetromino.xPos -= 1;
+          this.tetrominoOnBoard.xPos -= 1;
         }
         break;
       case 'ArrowRight':
         moveValid = this.isPositionValid(yPos, xPos + 1);
         if (moveValid) {
-          this.tetromino.xPos += 1;
+          this.tetrominoOnBoard.xPos += 1;
         }
         break;
       case 'KeyX':
@@ -125,25 +130,26 @@ export default class GameField {
         this.calculateAndVerifyRotation(COUNTERCLOCKWISE_TURN);
         break;
       case 'Space':
-        this.tetromino.yPos = this.calculateHardDrop()[1];
+        this.tetrominoOnBoard.yPos = this.calculateHardDrop(this.tetrominoOnBoard)[1];
         this.stackNeedsUpdate = true;
-        this.tetromino.canHold = true;
+        this.tetrominoes.canHold = true;
         SoundPlayer.play(HARD_DROP_SOUND);
         break;
       case 'KeyC':
       case 'ShiftLeft':
       case 'ShiftRight':
-        this.tetromino.setHeld();
+        this.tetrominoes.setHeld();
+        this.tetrominoOnBoard = Board.setTetrominoOnBoard(this.tetrominoes.current);
         break;
       case 'ArrowDown':
       case 'default':
         moveValid = this.isPositionValid(yPos + 1, xPos);
         if (moveValid) {
-          this.tetromino.yPos += 1;
+          this.tetrominoOnBoard.yPos += 1;
         } else {
           SoundPlayer.play(TETROMINO_LOCKED_SOUND);
           this.stackNeedsUpdate = true;
-          this.tetromino.canHold = true;
+          this.tetrominoes.canHold = true;
         }
         break;
       default:
@@ -153,30 +159,30 @@ export default class GameField {
   }
 
   getTetrominoPosRelativeToField(xPos, yPos) {
-    const colStart = xPos + Tetromino.getSolidBlockOnSideOffset(this.tetromino, LEFT);
-    const colEnd = xPos + Tetromino.getSolidBlockOnSideOffset(this.tetromino, RIGHT);
-    const rowStart = yPos + Tetromino.getSolidBlockOnSideOffset(this.tetromino, UP);
-    const rowEnd = yPos + Tetromino.getSolidBlockOnSideOffset(this.tetromino, DOWN);
+    const colStart = xPos + Tetromino.getSolidBlockOnSideOffset(this.tetrominoOnBoard, LEFT);
+    const colEnd = xPos + Tetromino.getSolidBlockOnSideOffset(this.tetrominoOnBoard, RIGHT);
+    const rowStart = yPos + Tetromino.getSolidBlockOnSideOffset(this.tetrominoOnBoard, UP);
+    const rowEnd = yPos + Tetromino.getSolidBlockOnSideOffset(this.tetrominoOnBoard, DOWN);
     return {
       colStart, colEnd, rowStart, rowEnd,
     };
   }
 
-  isPositionValid(yPos = this.tetromino.yPos, xPos = this.tetromino.xPos) {
+  isPositionValid(yPos = this.tetrominoOnBoard.yPos, xPos = this.tetrominoOnBoard.xPos) {
     const posRelativeToField = this.getTetrominoPosRelativeToField(xPos, yPos);
     const { colStart } = posRelativeToField;
     const { colEnd } = posRelativeToField;
     const { rowStart } = posRelativeToField;
     const { rowEnd } = posRelativeToField;
     // checks that the tetromino is within game area
-    if (colStart < 0 || colEnd >= GameField.columns || rowEnd >= GameField.rows) {
+    if (colStart < 0 || colEnd >= Board.columns || rowEnd >= Board.rows) {
       return false;
     }
     // checks if the tetromino would be in a space that's already occupied
     for (let y = rowStart, y_ = rowStart - yPos; y <= rowEnd; y++, y_++) {
       for (let x = colStart, x_ = colStart - xPos; x <= colEnd; x++, x_++) {
-        if (y < GameField.rows && y >= 0 && x < GameField.columns && x >= 0) {
-          if (this.gameField[y][x][0] === 1 && this.tetromino.shape[y_][x_] === 1) {
+        if (y < Board.rows && y >= 0 && x < Board.columns && x >= 0) {
+          if (this.gameField[y][x][0] === 1 && this.tetrominoOnBoard.shape[y_][x_] === 1) {
             return false;
           }
         }
@@ -185,10 +191,10 @@ export default class GameField {
     return true;
   }
 
-  calculateHardDrop() {
+  calculateHardDrop(tetromino) {
     let validPosition = true;
-    const finalXPos = this.tetromino.xPos;
-    let finalYPos = this.tetromino.yPos;
+    const finalXPos = tetromino.xPos;
+    let finalYPos = tetromino.yPos;
     while (validPosition) {
       validPosition = this.isPositionValid(finalYPos + 1, finalXPos);
       if (validPosition) {
@@ -199,30 +205,30 @@ export default class GameField {
   }
 
   calculateAndVerifyRotation(direction) {
-    const originalShape = this.tetromino.shape;
+    const originalShape = this.tetrominoOnBoard.shape;
     switch (direction) {
       case CLOCKWISE_TURN:
-        this.tetromino.shape = originalShape[0].map((value, index) => originalShape.map((row) => row[index]).reverse());
+        this.tetrominoOnBoard.shape = originalShape[0].map((value, index) => originalShape.map((row) => row[index]).reverse());
         break;
       case COUNTERCLOCKWISE_TURN:
-        this.tetromino.shape = originalShape[0].map((value, index) => originalShape.map((row) => row[row.length - index - 1]));
+        this.tetrominoOnBoard.shape = originalShape[0].map((value, index) => originalShape.map((row) => row[row.length - index - 1]));
         break;
       default:
         break;
     }
     if (!this.isPositionValid()) {
       if (!this.canKickWall()) {
-        this.tetromino.shape = originalShape;
+        this.tetrominoOnBoard.shape = originalShape;
       }
     }
   }
 
   canKickWall() {
     // for a rotated tetromino, checks if there would be a conflict (with the wall or the stack) if it's moved one step in one direction as the result of a kick
-    const conflictLeft = !this.isPositionValid(this.tetromino.yPos, this.tetromino.xPos - 1);
-    const conflictRight = !this.isPositionValid(this.tetromino.yPos, this.tetromino.xPos + 1);
-    const conflictUp = !this.isPositionValid(this.tetromino.yPos - 1, this.tetromino.xPos);
-    const conflictDown = !this.isPositionValid(this.tetromino.yPos + 1, this.tetromino.xPos);
+    const conflictLeft = !this.isPositionValid(this.tetrominoOnBoard.yPos, this.tetrominoOnBoard.xPos - 1);
+    const conflictRight = !this.isPositionValid(this.tetrominoOnBoard.yPos, this.tetrominoOnBoard.xPos + 1);
+    const conflictUp = !this.isPositionValid(this.tetrominoOnBoard.yPos - 1, this.tetrominoOnBoard.xPos);
+    const conflictDown = !this.isPositionValid(this.tetrominoOnBoard.yPos + 1, this.tetrominoOnBoard.xPos);
 
     // if the i tetromino is rotated, it can move one or two positions depending on which side makes the kick
     // this checks if moving two positions would be valid
@@ -230,11 +236,11 @@ export default class GameField {
     let conflictRightMoveTwo = true;
     let conflictUpMoveTwo = true;
     let conflictDownMoveTwo = true;
-    if (this.tetromino.color === Tetromino.tetrominoes.i.color) {
-      conflictLeftMoveTwo = !this.isPositionValid(this.tetromino.yPos, this.tetromino.xPos - 2);
-      conflictRightMoveTwo = !this.isPositionValid(this.tetromino.yPos, this.tetromino.xPos + 2);
-      conflictUpMoveTwo = !this.isPositionValid(this.tetromino.yPos - 2, this.tetromino.xPos);
-      conflictDownMoveTwo = !this.isPositionValid(this.tetromino.yPos + 2, this.tetromino.xPos);
+    if (this.tetrominoOnBoard.color === Tetromino.tetrominoes.i.color) {
+      conflictLeftMoveTwo = !this.isPositionValid(this.tetrominoOnBoard.yPos, this.tetrominoOnBoard.xPos - 2);
+      conflictRightMoveTwo = !this.isPositionValid(this.tetrominoOnBoard.yPos, this.tetrominoOnBoard.xPos + 2);
+      conflictUpMoveTwo = !this.isPositionValid(this.tetrominoOnBoard.yPos - 2, this.tetrominoOnBoard.xPos);
+      conflictDownMoveTwo = !this.isPositionValid(this.tetrominoOnBoard.yPos + 2, this.tetrominoOnBoard.xPos);
     }
 
     const canKickOnePosition = !(conflictLeft && conflictRight && conflictUp && conflictDown);
@@ -245,37 +251,37 @@ export default class GameField {
     }
     if (conflictLeft) {
       if (!conflictRight) {
-        this.tetromino.xPos += 1;
+        this.tetrominoOnBoard.xPos += 1;
         return true;
       } if (!conflictRightMoveTwo) {
-        this.tetromino.xPos += 2;
+        this.tetrominoOnBoard.xPos += 2;
         return true;
       }
     }
     if (conflictRight) {
       if (!conflictLeft) {
-        this.tetromino.xPos -= 1;
+        this.tetrominoOnBoard.xPos -= 1;
         return true;
       } if (!conflictLeftMoveTwo) {
-        this.tetromino.xPos -= 2;
+        this.tetrominoOnBoard.xPos -= 2;
         return true;
       }
     }
     if (conflictUp) {
       if (!conflictDown) {
-        this.tetromino.yPos += 1;
+        this.tetrominoOnBoard.yPos += 1;
         return true;
       } if (!conflictDownMoveTwo) {
-        this.tetromino.yPos += 2;
+        this.tetrominoOnBoard.yPos += 2;
         return true;
       }
     }
     if (conflictDown) {
       if (!conflictUp) {
-        this.tetromino.yPos -= 1;
+        this.tetrominoOnBoard.yPos -= 1;
         return true;
       } if (!conflictUpMoveTwo) {
-        this.tetromino.yPos -= 2;
+        this.tetrominoOnBoard.yPos -= 2;
         return true;
       }
     }
@@ -296,12 +302,12 @@ export default class GameField {
 
   static clearRow(gameField, row) {
     gameField.splice(row, 1);
-    gameField.unshift(Array(GameField.columns).fill([0, '']));
+    gameField.unshift(Array(Board.columns).fill([0, '']));
   }
 
   checkClearedRows() {
     let clearedRows = 0;
-    for (let row = 0; row < GameField.rows; row++) {
+    for (let row = 0; row < Board.rows; row++) {
       let rowIsComplete = true;
       for (let cell = 0; cell < this.gameField[row].length; cell++) {
         if (this.gameField[row][cell][0] === 0) {
@@ -310,7 +316,7 @@ export default class GameField {
         }
       }
       if (rowIsComplete) {
-        GameField.clearRow(this.gameField, row);
+        Board.clearRow(this.gameField, row);
         SoundPlayer.play(CLEARED_ROW_SOUND);
         clearedRows += 1;
       }
@@ -340,8 +346,8 @@ export default class GameField {
               color = cell[1];
             }
             gradient.addColorStop(0, color);
-            gradient.addColorStop(0.5, GameField.shadeColor(color, -10));
-            gradient.addColorStop(1, GameField.shadeColor(color, -40));
+            gradient.addColorStop(0.5, Board.shadeColor(color, -10));
+            gradient.addColorStop(1, Board.shadeColor(color, -40));
             location.fillStyle = gradient;
             location.fill();
           }
@@ -365,20 +371,20 @@ export default class GameField {
   drawCountdown() {
     this.clearCanvas(this.ctxMain);
     const fontSize = this.blockSize * 5;
-    GameField.addTextToCanvas(this.ctxMain, this.count, fontSize);
+    Board.addTextToCanvas(this.ctxMain, this.count, fontSize);
     this.count -= 1;
     return this.count < 1;
   }
 
   drawGameOverMessage() {
     const fontSize = this.blockSize * 2;
-    GameField.addTextToCanvas(this.ctxMain, 'Game Over', fontSize, '#FF0000');
+    Board.addTextToCanvas(this.ctxMain, 'Game Over', fontSize, '#FF0000');
   }
 
   drawPausedMessage() {
     this.clearCanvas(this.ctxMain);
     const fontSize = this.blockSize * 2;
-    GameField.addTextToCanvas(this.ctxMain, 'Paused', fontSize);
+    Board.addTextToCanvas(this.ctxMain, 'Paused', fontSize);
   }
 
   static addTextToCanvas(ctx, text, fontSize, color = '#FFFFFF') {
