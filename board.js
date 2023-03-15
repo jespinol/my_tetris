@@ -152,9 +152,9 @@ export default class Board {
       this.tetrominoOnBoard = Board.setTetrominoOnBoard(this.tetrominoes.current);
       const topOccupiedRow = Board.getTopOccupiedRow(this.gameField);
       if (topOccupiedRow <= 7) {
-        SoundPlayer.playOnEdgeFX(ON_EDGE_SOUND, topOccupiedRow);
+        SoundPlayer.playOnEdgeSoundFX(ON_EDGE_SOUND, topOccupiedRow);
       } else {
-        SoundPlayer.pause(ON_EDGE_SOUND);
+        SoundPlayer.pauseSound(ON_EDGE_SOUND);
       }
       this.stackNeedsUpdate = false;
     }
@@ -255,7 +255,7 @@ export default class Board {
         this.tetrominoOnBoard.yPos = this.calculateHardDrop(this.tetrominoOnBoard)[1];
         this.stackNeedsUpdate = true;
         this.tetrominoes.canHold = true;
-        SoundPlayer.play(HARD_DROP_SOUND);
+        SoundPlayer.playSound(HARD_DROP_SOUND);
         break;
       }
       case 'KeyC':
@@ -274,7 +274,7 @@ export default class Board {
           this.tetrominoOnBoard.yPos = newYPos;
           break;
         }
-        SoundPlayer.play(TETROMINO_LOCKED_SOUND);
+        SoundPlayer.playSound(TETROMINO_LOCKED_SOUND);
         this.stackNeedsUpdate = true;
         this.tetrominoes.canHold = true;
         return false;
@@ -392,7 +392,7 @@ export default class Board {
       const rowIsComplete = gameField[row].every((cell) => cell[0] !== 0);
       if (rowIsComplete) {
         this.clearRow(row);
-        SoundPlayer.play(CLEARED_ROW_SOUND);
+        SoundPlayer.playSound(CLEARED_ROW_SOUND);
         clearedRows += 1;
       }
     }
