@@ -357,7 +357,7 @@ export default class Board {
     // the following block adds two spaces to each direction if the tetromino is i
     // if not, all moves are already present in posChanges
     let allPosChanges = posChanges;
-    if (this.tetrominoOnBoard.color === Tetromino.tetrominoes.i.color) {
+    if (this.tetrominoOnBoard.color === Tetromino.tetrominoShapes.i.color) {
       allPosChanges = posChanges.concat(posChanges.map(([y, x]) => [y * 2, x * 2]));
     }
 
