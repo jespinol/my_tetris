@@ -26,7 +26,7 @@ export default class MyTetris {
   runGame(key) {
     switch (this.gameState) {
       case NEW: {
-        SoundPlayer.play(BACKGROUND_MUSIC, true);
+        SoundPlayer.playSound(BACKGROUND_MUSIC, true, 0.1);
         const countdownFinished = this.gameField.drawCountdown(this.countdownCount);
         this.countdownCount -= 1;
         if (countdownFinished) {
@@ -35,7 +35,7 @@ export default class MyTetris {
         break;
       }
       case RUNNING:
-        SoundPlayer.play(BACKGROUND_MUSIC, true);
+        SoundPlayer.playSound(BACKGROUND_MUSIC, true, 0.1);
         this.gameField.updatePos(key);
         this.gameField.updateField();
         if (this.gameField.stackState === NOT_UPDATABLE) {
@@ -51,13 +51,13 @@ export default class MyTetris {
         }
         break;
       case PAUSED:
-        SoundPlayer.fadeAudioOut(BACKGROUND_MUSIC);
-        SoundPlayer.fadeAudioOut(ON_EDGE_SOUND);
+        SoundPlayer.fadeSoundOut(BACKGROUND_MUSIC);
+        SoundPlayer.fadeSoundOut(ON_EDGE_SOUND);
         this.gameField.drawPausedMessage();
         break;
       case ENDING:
-        SoundPlayer.pause(BACKGROUND_MUSIC);
-        SoundPlayer.pause(ON_EDGE_SOUND);
+        SoundPlayer.pauseSound(BACKGROUND_MUSIC);
+        SoundPlayer.pauseSound(ON_EDGE_SOUND);
         this.gameField.drawGameOverMessage();
         this.gameState = ENDED;
         this.changePlayButton();
@@ -133,7 +133,7 @@ export default class MyTetris {
   }
 
   increaseLevel(level) {
-    SoundPlayer.play(LEVEL_UP_SOUND);
+    SoundPlayer.playSound(LEVEL_UP_SOUND);
     Board.addTextToCanvas(this.gameField.ctxMain, 'Level up!', this.gameField.blockSize * 0.8);
     return level + 1;
   }
