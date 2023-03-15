@@ -366,7 +366,7 @@ export default class Board {
     location.fillText(text, location.canvas.width / 2, location.canvas.height / 2);
   }
 
-  count = 2;
+  count = 3;
 
   drawCountdown() {
     this.clearCanvas(this.ctxMain);

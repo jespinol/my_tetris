@@ -11,70 +11,86 @@
             crossorigin="anonymous"></script>
     <link href="style.css" rel="stylesheet">
     <script type="module">
-        import init from "./init.js";
-        window.onload = init;
+		import init from "./init.js";
+
+		window.onload = init;
     </script>
 </head>
 <br>
 <body>
 <div class="container">
-    <div class="row">
-        <div class="col leftCol">
-            <div class="row" id="logoArea">
-                <a href="https://en.wikipedia.org/wiki/Tetris">
-                    <img class="img-fluid mx-auto d-block logo"
-                         src="resources/static/images/The_Tetris_Company_logo_2019.png" alt="">
-                </a>
+    <div class="row justify-content-center">
+        <div class="col-3 leftCol">
+            <div class="row mb-3">
+                <div class="col">
+                    <a href="https://en.wikipedia.org/wiki/Tetris">
+                        <img src="resources/static/images/The_Tetris_Company_logo_2019.png" class="logo" alt="">
+                    </a>
+                </div>
             </div>
-            <br>
-            <button type="button" class="btn btn-lg btn-primary mx-auto d-block" id="playButton">
-                Start
-            </button>
-            <br>
-            <div class="row">
-                <div class="col text-white fs-5 fw-bold">
-                    <div class="row">
-                        <div class="col " id="levelArea">
-                            <div>Level</div>
-                            <div id="level">1</div>
-                        </div>
-                        <div class="col text-white" id="scoreArea">
-                            <div>Score</div>
-                            <div id="score">0</div>
-                        </div>
+            <div class="row mb-3">
+                <div class="col">
+                    <button type="button" class="btn btn-primary btn-lg" id="playButton">Start</button>
+                </div>
+            </div>
+            <div class="row mb-3 text-white fs-5 fw-bold">
+                <div class="col">
+                    <div class="row mb-3">
+                        <span>Level</span>
                     </div>
-                    <br>
-                    <div class="row sideCanvases">
-                        <div class="col">
-                            <div class="row">
-                                Next &nbsp &nbsp
-                                <canvas id="nextCanvas" width="20" height="20">
-                                </canvas>
-                            </div>
-                            <br>
-                            <div class="row">
-                                Hold &nbsp &nbsp
-                                <canvas id="holdCanvas" width="20" height="20">
-                                </canvas>
-                            </div>
+                    <div class="row mb-3">
+                        <span>Score</span>
+                    </div>
+                </div>
+                <div class="col">
+                    <div class="row mb-3">
+                        <div id="level">1</div>
+                    </div>
+                    <div class="row mb-3">
+                        <div id="score">000000</div>
+                    </div>
+                </div>
+            </div>
+            <div class="row mb-3">
+                <div class="row sideCanvases">
+                    <div class="col text-white fs-5 fw-bold">
+                        <div class="row mb-2">
+                            Next &nbsp; &nbsp;
+                            <canvas id="nextCanvas" width="20" height="20"></canvas>
+                        </div>
+                        <div class="row">
+                            Hold &nbsp; &nbsp;
+                            <canvas id="holdCanvas" width="20" height="20"></canvas>
                         </div>
                     </div>
                 </div>
             </div>
         </div>
-        <div class="col mx-5 rightCol">
-            <div class="row mainCanvas">
-                <canvas id="gameCanvas" width="100" height="220">
-                </canvas>
+        <div class="col-8">
+            <div class="row justify-content-center mainCanvas">
+                <canvas id="gameCanvas" width="100" height="220"></canvas>
             </div>
         </div>
     </div>
-    <div class="modal fade" id="settingsModal" tabindex="-1">
-        <div class="modal-dialog modal-dialog-centered">
-            <div class="modal-content fw-bold" id="settings">
-            </div>
+    <br>
+    <div class="row">
+        <div class="col text-center text-white">
+            Tetris ® & © 1985~2023 Tetris Holding <br>
+            Tetris logos, Tetris theme song and Tetriminos are trademarks of Tetris Holding.
+            The Tetris trade dress is owned by Tetris Holding. Licensed to The Tetris Company.
+            Tetris Game Design by Alexey Pajitnov.
+            Tetris Logo Design by Roger Dean.
+            All Rights Reserved.
+            All other trademarks are the property of their respective owners.
         </div>
     </div>
 </div>
 </body>
 </html>
+
+<!--    <div class="modal fade" id="settingsModal" tabindex="-1">-->
+<!--        <div class="modal-dialog modal-dialog-centered">-->
+<!--            <div class="modal-content fw-bold" id="settings">-->
+<!--            </div>-->
+<!--        </div>-->
+<!--    </div>-->

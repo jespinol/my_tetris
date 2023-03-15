@@ -43,6 +43,7 @@ export default class MyTetris {
           const canLevelUp = this.levelPoints >= (10 * this.level);
           if (canLevelUp) {
             this.level = this.increaseLevel(this.level);
+            document.getElementById('level').innerHTML = (this.level).toString();
             this.speed = MyTetris.calculateSpeed(this.level);
           }
         }
@@ -125,14 +126,13 @@ export default class MyTetris {
     if (clearedRowNum > 0) {
       this.levelPoints += clearedRowNum;
       this.points += MyTetris.calculatePoints(clearedRowNum, this.level);
-      document.getElementById('score').innerText = (this.points).toString();
+      document.getElementById('score').innerText = (this.points).toString().padStart(6, '0');
     }
   }
 
   increaseLevel(level) {
     SoundPlayer.play(LEVEL_UP_SOUND);
     Board.addTextToCanvas(this.gameField.ctxMain, 'Level up!', this.gameField.blockSize * 0.8);
-    document.getElementById('level').innerText = (this.level).toString();
     return level + 1;
   }
 

@@ -1,21 +1,7 @@
 body {
     background-color: #696969;
-    background-image:  radial-gradient(#808080 0.1px, #202020 1px);
+    background-image: radial-gradient(#808080 0.1px, #202020 1px);
     background-size: 20px 20px;
-}
-
-.mainCanvas canvas {
-    background-color: #181818;
-    width: 45vh;
-    height: auto;
-    padding: 5px;
-}
-
-.sideCanvases canvas {
-    background-color: #181818;
-    width: 10vw;
-    height: auto;
-    padding: 3px;
 }
 
 .logo {
@@ -23,9 +9,23 @@ body {
 }
 
 .leftCol {
-    max-width: 20vw;
+    width: 20%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    /*justify-content: space-between;*/
 }
 
-.rightCol {
-    max-width: 80vw;
+.mainCanvas canvas {
+    background-color: #181818;
+    width: 40vh;
+    height: auto;
+    padding: 5px;
+}
+
+.sideCanvases canvas {
+    background-color: #181818;
+    width: calc(40vh * 0.3);
+    height: calc(40vh * 0.3);
+    padding: 3px;
 }
