@@ -13,6 +13,7 @@ export default class MyTetris {
     this.gameField = new Board(mainCanvasId, nextCanvasId, holdCanvasId, blockSize);
     this.playButton = playButton;
     this.gameState = NEW;
+    this.countdownCount = 3;
     this.speed = 1000;
     this.levelPoints = 0;
     this.level = 1;
@@ -26,7 +27,8 @@ export default class MyTetris {
     switch (this.gameState) {
       case NEW: {
         SoundPlayer.play(BACKGROUND_MUSIC, true);
-        const countdownFinished = this.gameField.drawCountdown();
+        const countdownFinished = this.gameField.drawCountdown(this.countdownCount);
+        this.countdownCount -= 1;
         if (countdownFinished) {
           this.gameState = RUNNING;
         }

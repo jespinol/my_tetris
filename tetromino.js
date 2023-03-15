@@ -73,7 +73,9 @@ export default class Tetromino {
         this.setCurrentAndNext(true);
       }
       this.canHold = false;
+      return true;
     }
+    return false;
   }
 
   static getSolidBlockOnSideOffset(tetromino, side) {
