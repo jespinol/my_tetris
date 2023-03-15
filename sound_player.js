@@ -1,38 +1,45 @@
 export default class SoundPlayer {
-  static async play(sound, doLoop = false, volumeLevel = 0.5) {
-    sound.volume = volumeLevel;
-    sound.loop = doLoop;
-    await sound.play();
+  // plays a sound with optional loop and volume settings
+  static async playSound(sound, doLoop = false, volumeLevel = 0.5) {
+    try {
+      sound.volume = volumeLevel;
+      sound.loop = doLoop;
+      await sound.play();
+    } catch (error) { /* empty */ }
   }
 
-  static pause(sound) {
-    if (!sound.pause()) {
+  // pauses a sound
+  static pauseSound(sound) {
+    try {
       sound.pause();
-    }
+    } catch (error) { /* empty */ }
   }
 
-  static fadeAudioOut(sound) {
-    if (sound.volume > 0.5) {
-      sound.volume = 0.5;
-    }
-    const volumeChange = 0.01;
-    const targetVolume = 0.0;
-    let currentVolume = sound.volume;
-    const fadeAudio = setInterval(() => {
-      currentVolume -= volumeChange;
-      sound.volume = currentVolume.toFixed(1);
-      if (sound.volume <= targetVolume) {
-        clearInterval(fadeAudio);
-      }
-    }, 50);
+  // fades out a sound
+  static fadeSoundOut(sound) {
+    try {
+      const volumeChange = 0.01;
+      const targetVolume = 0.0;
+      let currentVolume = sound.volume;
+      const fadeAudio = setInterval(() => {
+        currentVolume -= volumeChange;
+        sound.volume = currentVolume.toFixed(1);
+        if (sound.volume <= targetVolume) {
+          clearInterval(fadeAudio);
+        }
+      }, 25);
+    } catch (error) { /* empty */ }
   }
 
-  static playOnEdgeFX(sound, currentRow) {
-    const maxVolume = 2.0;
-    const maxRate = 2.0;
-    sound.volume = (maxVolume / (currentRow + 2)).toFixed(1);
-    sound.playbackRate = (maxRate / (currentRow + 2)).toFixed(1);
-    sound.loop = true;
-    sound.play(sound);
+  // plays a sound effect with varying volume and speed based on stack height
+  static playOnEdgeSoundFX(sound, stackHeight) {
+    try {
+      const maxVolume = 2.0;
+      const maxRate = 2.0;
+      sound.volume = (maxVolume / (stackHeight + 2)).toFixed(1);
+      sound.playbackRate = (maxRate / (stackHeight + 2)).toFixed(1);
+      sound.loop = true;
+      sound.play();
+    } catch (error) { /* empty */ }
   }
 }
