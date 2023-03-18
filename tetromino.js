@@ -5,6 +5,7 @@ const {
 } = SIDES;
 
 export default class Tetromino {
+  // defines the shapes, colors, and starting positions for the tetrominoes
   static tetrominoShapes = {
     l: {
       shape: [[0, 0, 1], [1, 1, 1], [0, 0, 0]],
@@ -51,7 +52,7 @@ export default class Tetromino {
   };
 
   constructor() {
-    this.listOfNextTetrominoes = Tetromino.initTetrominoes();
+    this.nextTetrominoes = Tetromino.initTetrominoes();
     this.current = null;
     this.next = null;
     this.held = null;
@@ -78,13 +79,13 @@ export default class Tetromino {
     if (useHeld && !this.held) {
       return;
     }
-    const currentTetromino = useHeld ? this.held : Tetromino.tetrominoShapes[this.listOfNextTetrominoes.shift()];
+    const currentTetromino = useHeld ? this.held : Tetromino.tetrominoShapes[this.nextTetrominoes.shift()];
     if (!useHeld) {
-      this.listOfNextTetrominoes.push(Tetromino.selectRandomTetromino());
+      this.nextTetrominoes.push(Tetromino.selectRandomTetromino());
     }
     this.held = useHeld ? this.current : this.held;
     this.current = currentTetromino;
-    this.next = Tetromino.tetrominoShapes[this.listOfNextTetrominoes[0]];
+    this.next = Tetromino.tetrominoShapes[this.nextTetrominoes[0]];
   }
 
   // if a tetromino can be held, swap it with the current tetromino
