@@ -3,19 +3,21 @@ import SoundPlayer from './sound_player.js';
 import { GAME_STATES, SOUNDS, STACK_STATES } from './constants.js';
 
 const {
-  NEW, RUNNING, UPDATING, PAUSED, ENDING, ENDED,
+  NEW, RUNNING, PAUSED, ENDING, ENDED,
 } = GAME_STATES;
-const { OK, NOT_UPDATABLE } = STACK_STATES;
+const { NOT_UPDATABLE } = STACK_STATES;
 const { BACKGROUND_MUSIC, LEVEL_UP_SOUND, ON_EDGE_SOUND } = SOUNDS;
 
 export default class MyTetris {
-  constructor(mainCanvasId, nextCanvasId, holdCanvasId, blockSize, playButton) {
-    this.gameField = new Board(mainCanvasId, nextCanvasId, holdCanvasId, blockSize);
+  constructor(gameCanvas, nextCanvas1, nextCanvas2, nextCanvas3, holdCanvas, blockSize, playButton) {
+    this.gameField = new Board(gameCanvas, nextCanvas1, nextCanvas2, nextCanvas3, holdCanvas, blockSize);
     this.playButton = playButton;
     this.gameState = NEW;
     this.countdownCount = 3;
-    this.speed = 1000;
-    this.levelPoints = 0;
+    this.baseSpeed = 1000;
+    this.speedMultiplier = 0;
+    this.speed = this.baseSpeed + (0.2 * this.baseSpeed * this.speedMultiplier);
+    this.clearedRows = 0;
     this.level = 1;
     this.points = 0;
     this.animationActive = false;
@@ -23,10 +25,11 @@ export default class MyTetris {
     this.lastRender = -1;
   }
 
+  // executes game functions depending on the gameState
   runGame(key) {
     switch (this.gameState) {
       case NEW: {
-        SoundPlayer.playSound(BACKGROUND_MUSIC, true, 0.1);
+        SoundPlayer.playSound(BACKGROUND_MUSIC, true, 0.5);
         const countdownFinished = this.gameField.drawCountdown(this.countdownCount);
         this.countdownCount -= 1;
         if (countdownFinished) {
@@ -35,18 +38,18 @@ export default class MyTetris {
         break;
       }
       case RUNNING:
-        SoundPlayer.playSound(BACKGROUND_MUSIC, true, 0.1);
+        SoundPlayer.playSound(BACKGROUND_MUSIC, true, 0.5);
         this.gameField.updatePos(key);
         this.gameField.updateField();
         if (this.gameField.stackState === NOT_UPDATABLE) {
           this.switchGameStates(ENDING);
         } else {
           this.updatePoints();
-          const canLevelUp = this.levelPoints >= (10 * this.level);
+          const canLevelUp = this.clearedRows >= (10 * this.level);
           if (canLevelUp) {
             this.level = this.increaseLevel(this.level);
             document.getElementById('level').innerHTML = (this.level).toString();
-            this.speed = MyTetris.calculateSpeed(this.level);
+            this.speed = MyTetris.calculateSpeed(this.baseSpeed, this.speedMultiplier, this.level);
           }
         }
         break;
@@ -68,11 +71,8 @@ export default class MyTetris {
     }
   }
 
-  switchGameStates(newState, newSpeed) {
-    if (newSpeed) {
-      this.tempSpeed = this.speed;
-      this.speed = newSpeed;
-    }
+  // changes the state of the game and restarts the animation
+  switchGameStates(newState) {
     this.switchAnimationState(false);
     this.lastRender = -1;
     this.gameState = newState;
@@ -80,6 +80,7 @@ export default class MyTetris {
     this.switchAnimationState(true);
   }
 
+  // changes the text and color of the button on the page
   changePlayButton() {
     switch (this.gameState) {
       case ENDED:
@@ -99,6 +100,7 @@ export default class MyTetris {
     }
   }
 
+  // starts or stops the animation
   switchAnimationState(startAnimation) {
     if (startAnimation === false) {
       this.animationActive = false;
@@ -109,6 +111,7 @@ export default class MyTetris {
     }
   }
 
+  // renders a new animation frame after a time period specified by this.speed
   animate(timestamp) {
     if (this.animationActive) {
       if (this.gameState !== ENDED) {
@@ -123,21 +126,25 @@ export default class MyTetris {
     }
   }
 
+  // increases the value of points if rows were cleared
   updatePoints() {
-    const clearedRowNum = this.gameField.checkClearedRows();
-    if (clearedRowNum > 0) {
-      this.levelPoints += clearedRowNum;
-      this.points += MyTetris.calculatePoints(clearedRowNum, this.level);
-      document.getElementById('score').innerText = (this.points).toString().padStart(6, '0');
+    const newlyClearedRows = this.gameField.checkCompleteRows();
+    if (newlyClearedRows > 0) {
+      this.clearedRows += newlyClearedRows;
+      document.getElementById('lines').innerText = (this.clearedRows).toString().padStart(3, '0');
+      this.points += MyTetris.calculatePoints(newlyClearedRows, this.level);
+      document.getElementById('score').innerText = (this.points).toString().padStart(5, '0');
     }
   }
 
+  // whe the level increases: play a sound, print a message on the board, and increase level
   increaseLevel(level) {
     SoundPlayer.playSound(LEVEL_UP_SOUND);
     Board.addTextToCanvas(this.gameField.ctxMain, 'Level up!', this.gameField.blockSize * 0.8);
     return level + 1;
   }
 
+  // calculates the score that's displayed to the user
   static calculatePoints(clearedRowNum, level) {
     const pointsPerClearedRow = {
       1: 40, 2: 100, 3: 300, 4: 1200,
@@ -145,7 +152,10 @@ export default class MyTetris {
     return pointsPerClearedRow[clearedRowNum] * level;
   }
 
-  static calculateSpeed(level) {
-    return 1000 * (0.9 - (level - 1) * 0.007) ** (level - 1);
+  // calculates the speed of the game depending on the level and a multiplier specified by the chosen difficulty
+  static calculateSpeed(baseSpeed, multiplier, level) {
+    const speedByLevel = baseSpeed * (0.9 - (level - 1) * 0.007) ** (level - 1);
+    const speedByMultiplier = 0.2 * speedByLevel * multiplier;
+    return speedByLevel + speedByMultiplier;
   }
 }
