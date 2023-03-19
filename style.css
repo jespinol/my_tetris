@@ -36,9 +36,9 @@ body {
 
 .modal-content {
     background-color: #696969;
-    margin: 20vh auto;
+    margin: 5vh auto;
     padding: 0 15px 15px 15px;
-    width: 30vw;
+    width: 40vh;
 }
 
 #slider {
