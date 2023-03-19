@@ -55,6 +55,7 @@ export default function init() {
   setCanvasSize(blockSize, gameCanvas, nextCanvas1, nextCanvas2, nextCanvas3, holdCanvas);
   const playButton = document.querySelector('#playButton');
   const settingsModal = document.getElementById('settingsModal');
+  const helpModal = document.getElementById('helpModal');
   const game = new MyTetris(gameCanvas, nextCanvas1, nextCanvas2, nextCanvas3, holdCanvas, blockSize, playButton);
 
   // changes gameState when the user clicks the playButton
@@ -87,8 +88,9 @@ export default function init() {
       case 'Escape':
       case 'F1':
       case 'KeyP':
-        if (settingsModal.style.display !== 'none') {
+        if (settingsModal.style.display !== 'none' || helpModal.style.display !== 'none') {
           settingsModal.style.display = 'none';
+          helpModal.style.display = 'none';
         }
         if (game.gameState === RUNNING) {
           game.switchGameStates(PAUSED);
@@ -117,6 +119,15 @@ export default function init() {
     }
   });
 
+  // opens a panel with some helpful information
+  const helpButton = document.getElementById('helpButton');
+  helpButton.addEventListener('click', () => {
+    if (game.gameState === RUNNING) {
+      game.switchGameStates(PAUSED);
+    }
+    helpModal.style.display = 'block';
+  });
+
   // opens a settings panel when the user clicks on the settingsButton
   const settingsButton = document.getElementById('settingsButton');
   settingsButton.addEventListener('click', () => {
@@ -126,21 +137,24 @@ export default function init() {
     settingsModal.style.display = 'block';
   });
 
-  // clicking away from the settings panel closes it
-  // if the game was paused due to opening the settings panel, resume it
+  // clicking away from the settings/help panel closes it
   window.onclick = (event) => {
-    if (event.target === settingsModal) {
+    if (event.target === settingsModal || event.target === helpModal) {
       settingsModal.style.display = 'none';
-      if (game.gameState === PAUSED) {
-        game.switchGameStates(RUNNING);
-      }
+      helpModal.style.display = 'none';
     }
   };
 
   // close the settings panel when the close button if clicked
-  const modalCloseButton = document.getElementById('modalCloseButton');
-  modalCloseButton.addEventListener('click', () => {
+  const settingsModalCloseButton = document.getElementById('settingsModalCloseButton');
+  settingsModalCloseButton.addEventListener('click', () => {
     settingsModal.style.display = 'none';
+  });
+
+  // close the help panel when the close button if clicked
+  const helpModalCloseButton = document.getElementById('helpModalCloseButton');
+  helpModalCloseButton.addEventListener('click', () => {
+    helpModal.style.display = 'none';
   });
 
   // turns off all sounds if the setting is checked
@@ -175,9 +189,10 @@ export default function init() {
   // increases or decreases the rate of speed change upon leveling up depending on user choice
   const speedSlider = document.getElementById('speedSlider');
   speedSlider.addEventListener('input', (event) => {
-    const defaultSpeed = 4;
+    const defaultSpeed = 3;
+    const speedChange = 0.8;
     const chosenSpeed = event.target.valueAsNumber;
-    // the slider increases (if > defaultSpeed) or decreases (if < defaultSpeed) game speed by 20%
-    game.speedMultiplier = 0.2 * (defaultSpeed - chosenSpeed);
+    game.speedMultiplier = speedChange * (defaultSpeed - chosenSpeed);
+    game.updateSpeed();
   });
 }
