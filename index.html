@@ -12,105 +12,68 @@
             crossorigin="anonymous"></script>
     <script type="module">
 		import init from "./init.js";
+
 		window.onload = init;
     </script>
 </head>
 <body>
-<div class="container">
-    <br>
+<div class="container mt-3">
     <div class="row justify-content-center">
-        <div class="col leftCol mx-4">
+        <div class="col leftCol m-5">
             <div class="row">
-                <div class="col">
-                    <a href="https://en.wikipedia.org/wiki/Tetris">
-                        <img src="resources/static/images/The_Tetris_Company_logo_2019.png" class="logo" alt="">
-                    </a>
-                </div>
+                <a href="https://en.wikipedia.org/wiki/Tetris">
+                    <img src="resources/static/images/The_Tetris_Company_logo_2019.png" class="logo" alt="Tetris logo">
+                </a>
             </div>
             <div class="row">
-                <div class="col">
-                    <button type="button" class="btn btn-primary btn-lg" id="playButton">Start</button>
-                </div>
+                <button type="button" class="btn btn-primary btn-lg" id="playButton">Start</button>
             </div>
             <div class="row text-white fs-5 fw-bold">
                 <div class="col">
-                    <div class="row">
-                        <span>Level</span>
-                    </div>
-                    <div class="row">
-                        <span>Lines</span>
-                    </div>
-                    <div class="row">
-                        <span>Score</span>
-                    </div>
-                </div>
-                <div class="col">
-                    <div class="row">
-                        <div id="level">1</div>
-                    </div>
-                    <div class="row">
-                        <div id="lines">000</div>
-                    </div>
-                    <div class="row">
-                        <div id="score">00000</div>
-                    </div>
+                    <p>Level: <span id="level">01</span></p>
+                    <p>Lines: <span id="lines">0000</span></p>
+                    <p>Score: <span id="score">000000</span></p>
                 </div>
             </div>
-            <br>
             <div class="row">
-                <div class="col">
-                    <button class="btn btn-secondary btn-sm" id="settingsButton">&#9881;&nbsp;Settings</button>
-                </div>
+                <button class="btn btn-secondary btn-sm" id="settingsButton">&#9881;&nbsp;Settings</button>
             </div>
-            <br>
+            <div class="row">
+                <button class="btn btn-secondary btn-sm" id="helpButton">&quest;&nbsp;Help</button>
+            </div>
         </div>
-        <div class="col">
+        <div class="col middleCol">
             <div class="row justify-content-center mainCanvas">
                 <canvas id="gameCanvas" width="100" height="220"></canvas>
             </div>
         </div>
-        <div class="col rightCol mx-4">
-            <div class="row">
-                <div class="row">
-                    <div class="col text-white fs-5 fw-bold">
-                        <div class="row">
-                            Next
-                        </div>
-                        <div class="row sideCanvases">
-                            <canvas id="nextCanvas1" width="20" height="20"></canvas>
-                        </div>
-                        <br>
-                        <div class="row sideCanvases">
-                            <canvas id="nextCanvas2" width="20" height="20"></canvas>
-                        </div>
-                        <br>
-                        <div class="row sideCanvases">
-                            <canvas id="nextCanvas3" width="20" height="20"></canvas>
-                        </div>
-                        <br>
-                        <br>
-                        <div class="row">
-                            Hold
-                        </div>
-                        <div class="row sideCanvases">
-                            <canvas id="holdCanvas" width="20" height="20"></canvas>
-                        </div>
-                    </div>
-                </div>
+        <div class="col rightCol m-5 text-white fs-5 fw-bold">
+            <span>Next</span>
+            <div class="row sideCanvases">
+                <canvas id="nextCanvas1" width="20" height="20"></canvas>
+            </div>
+            <div class="row sideCanvases">
+                <canvas id="nextCanvas2" width="20" height="20"></canvas>
+            </div>
+            <div class="row sideCanvases">
+                <canvas id="nextCanvas3" width="20" height="20"></canvas>
+            </div>
+            <br>
+            <span>Hold</span>
+            <div class="row sideCanvases">
+                <canvas id="holdCanvas" width="20" height="20"></canvas>
             </div>
         </div>
     </div>
     <br>
-    <div class="row">
-        <div class="col text-center text-white fs-6">
-            Tetris ® & © 1985~2023 Tetris Holding <br>
-            Tetris logos, Tetris theme song and Tetriminos are trademarks of Tetris Holding.
-            The Tetris trade dress is owned by Tetris Holding. Licensed to The Tetris Company.
-            Tetris Game Design by Alexey Pajitnov.
-            Tetris Logo Design by Roger Dean.
-            All Rights Reserved.
-            All other trademarks are the property of their respective owners.
-        </div>
+    <div class="row text-center text-white fs-6">
+        Tetris ® & © 1985~2023 Tetris Holding <br>
+        Tetris logos, Tetris theme song and Tetriminos are trademarks of Tetris Holding.
+        The Tetris trade dress is owned by Tetris Holding. Licensed to The Tetris Company.
+        Tetris Game Design by Alexey Pajitnov.
+        Tetris Logo Design by Roger Dean.
+        All Rights Reserved.
+        All other trademarks are the property of their respective owners.
     </div>
     <div class="modal" id="settingsModal" tabindex="-1">
         <div class="modal-content text-white fw-bold">
