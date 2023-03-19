@@ -102,7 +102,7 @@
     </div>
     <br>
     <div class="row">
-        <div class="col text-center text-white">
+        <div class="col text-center text-white fs-6">
             Tetris ® & © 1985~2023 Tetris Holding <br>
             Tetris logos, Tetris theme song and Tetriminos are trademarks of Tetris Holding.
             The Tetris trade dress is owned by Tetris Holding. Licensed to The Tetris Company.
@@ -114,7 +114,7 @@
     </div>
     <div class="modal" id="settingsModal" tabindex="-1">
         <div class="modal-content text-white fw-bold">
-            <span class="modalCloseButton" id="modalCloseButton">&times;</span>
+            <span class="modalCloseButton" id="settingsModalCloseButton">&times;</span>
             <h3>Settings</h3>
             <hr>
             <form>
@@ -139,11 +139,46 @@
                     <label for="toggleAllowHoldTetromino">Disable holding tetrominoes</label>
                     <br>
                     <div id="slider">
-                        <input type="range" id="speedSlider" name="speedSlider" min="1" max="6" value="4">
-                        <label for="speedSlider">Difficulty&emsp;</label>
+                        <p>Difficulty&emsp;<span>-
+                            <label for="speedSlider"></label><input type="range" id="speedSlider" name="speedSlider"
+                                                                    min="1" max="5" value="3">
+                        +</span></p>
                     </div>
                 </fieldset>
             </form>
+        </div>
+    </div>
+    <div class="modal" id="helpModal" tabindex="-1">
+        <div class="modal-content text-white fw-bold">
+            <span class="modalCloseButton" id="helpModalCloseButton">&times;</span>
+            <h3>Help</h3>
+            <hr>
+            <fieldset>
+                <legend>Controls</legend>
+                <p><img src="https://img.icons8.com/ios/50/null/enter-key.png" alt="Enter key"/>&nbsp;Start or resume
+                    game</p>
+                <p><img src="https://img.icons8.com/ios/50/null/p-key.png" alt="P key"/><img
+                        src="https://img.icons8.com/ios/50/null/esc.png" alt="Esc key"/><img
+                        src="https://img.icons8.com/ios/50/null/f1-key.png" alt="F1 key"/>&nbsp;Pause</p>
+                <p><img src="https://img.icons8.com/ios/50/null/left-squared--v2.png" alt="Left arrow key"/>&nbsp;Move
+                    left</p>
+                <p><img src="https://img.icons8.com/ios/50/null/right-squared--v2.png" alt="Right arrow key"/>&nbsp;Move
+                    right</p>
+                <p><img src="https://img.icons8.com/ios/50/null/down-squared--v2.png" alt="Down arrow key"/>&nbsp;Move
+                    down</p>
+                <p><img src="https://img.icons8.com/ios/50/null/space-key.png" alt="Space key"/>&nbsp;Hard drop</p>
+                <p><img src="https://img.icons8.com/ios/50/null/up-squared.png" alt="Up arrow key"/><img
+                        src="https://img.icons8.com/ios/50/null/x-key.png" alt="X key"/>&nbsp;Rotate clockwise</p>
+                <p><img src="https://img.icons8.com/ios/50/null/z-key.png" alt="Z key"/><img
+                        src="https://img.icons8.com/ios/50/null/ctrl.png" alt="Control key"/>&nbsp;Rotate
+                    counterclockwise</p>
+                <p><img src="https://img.icons8.com/ios/50/null/c-key.png" alt="C key"/><img
+                        src="https://img.icons8.com/ios/50/null/shift--v2.png" alt=""/>&nbsp;Hold tetromino</p>
+                <p style="text-align: right; font-size: xx-small"><a target="_blank"
+                                                                     href="https://icons8.com/icon/57944/control"
+                                                                     style="color: white; text-decoration: none">&nbsp;Icons
+                    by Icons8</a></p>
+            </fieldset>
         </div>
     </div>
 </div>
