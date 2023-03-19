@@ -48,7 +48,7 @@ export default class MyTetris {
           const canLevelUp = this.clearedRows >= (10 * this.level);
           if (canLevelUp) {
             this.level = this.increaseLevel(this.level);
-            document.getElementById('level').innerHTML = (this.level).toString();
+            document.getElementById('level').innerHTML = (this.level).toString().padStart(2, '0');
             this.speed = MyTetris.calculateSpeed(this.baseSpeed, this.speedMultiplier, this.level);
           }
         }
@@ -131,9 +131,9 @@ export default class MyTetris {
     const newlyClearedRows = this.gameField.checkCompleteRows();
     if (newlyClearedRows > 0) {
       this.clearedRows += newlyClearedRows;
-      document.getElementById('lines').innerText = (this.clearedRows).toString().padStart(3, '0');
+      document.getElementById('lines').innerText = (this.clearedRows).toString().padStart(4, '0');
       this.points += MyTetris.calculatePoints(newlyClearedRows, this.level);
-      document.getElementById('score').innerText = (this.points).toString().padStart(5, '0');
+      document.getElementById('score').innerText = (this.points).toString().padStart(6, '0');
     }
   }
 
@@ -144,12 +144,9 @@ export default class MyTetris {
     return level + 1;
   }
 
-  // calculates the score that's displayed to the user
-  static calculatePoints(clearedRowNum, level) {
-    const pointsPerClearedRow = {
-      1: 40, 2: 100, 3: 300, 4: 1200,
-    };
-    return pointsPerClearedRow[clearedRowNum] * level;
+  // updates the game speed due to event (e.g. change in difficulty)
+  updateSpeed() {
+    this.speed = MyTetris.calculateSpeed(this.baseSpeed, this.speedMultiplier, this.level);
   }
 
   // calculates the speed of the game depending on the level and a multiplier specified by the chosen difficulty
@@ -157,5 +154,13 @@ export default class MyTetris {
     const speedByLevel = baseSpeed * (0.9 - (level - 1) * 0.007) ** (level - 1);
     const speedByMultiplier = 0.2 * speedByLevel * multiplier;
     return speedByLevel + speedByMultiplier;
+  }
+
+  // calculates the score that's displayed to the user
+  static calculatePoints(clearedRowNum, level) {
+    const pointsPerClearedRow = {
+      1: 40, 2: 100, 3: 300, 4: 1200,
+    };
+    return pointsPerClearedRow[clearedRowNum] * level;
   }
 }
