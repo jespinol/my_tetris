@@ -237,6 +237,7 @@ export default class Board {
         break;
       case 'KeyZ':
       case 'ControlLeft':
+      case 'ControlRight':
         this.calculateAndVerifyRotation(COUNTERCLOCKWISE_TURN);
         break;
       case 'Space': {
@@ -421,7 +422,7 @@ export default class Board {
 
   // sets a fontSize and calls a method to draw a phrase on a canvas
   drawGameOverMessage() {
-    const fontSize = this.blockSize * 2;
+    const fontSize = this.blockSize * 1.8;
     Board.addTextToCanvas(this.ctxMain, 'Game Over', fontSize, '#FF0000');
   }
 
