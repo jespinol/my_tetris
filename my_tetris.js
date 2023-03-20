@@ -6,7 +6,9 @@ const {
   NEW, RUNNING, PAUSED, ENDING, ENDED,
 } = GAME_STATES;
 const { NOT_UPDATABLE } = STACK_STATES;
-const { BACKGROUND_MUSIC, LEVEL_UP_SOUND, ON_EDGE_SOUND } = SOUNDS;
+const {
+  BACKGROUND_MUSIC, LEVEL_UP_SOUND, ON_EDGE_SOUND, GAME_OVER_SOUND,
+} = SOUNDS;
 
 export default class MyTetris {
   constructor(gameCanvas, nextCanvas1, nextCanvas2, nextCanvas3, holdCanvas, blockSize, playButton) {
@@ -59,9 +61,10 @@ export default class MyTetris {
         this.gameField.drawPausedMessage();
         break;
       case ENDING:
-        SoundPlayer.pauseSound(BACKGROUND_MUSIC);
         SoundPlayer.pauseSound(ON_EDGE_SOUND);
+        SoundPlayer.fadeSoundOut(BACKGROUND_MUSIC);
         this.gameField.drawGameOverMessage();
+        SoundPlayer.playSound(GAME_OVER_SOUND);
         this.gameState = ENDED;
         this.changePlayButton();
         this.switchAnimationState(false);
