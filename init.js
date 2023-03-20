@@ -18,7 +18,8 @@ function resizeCanvas(canvas, width, height) {
   canvas.setAttribute('height', height);
 }
 
-// calculates the width/height of each canvas depending on blocksize, then call a function to change those attributes
+// calculates the width/height of each canvas depending on blocksize
+// then call a function to change those attributes
 function setCanvasSize(blockSize, gameCanvas, nextCanvas1, nextCanvas2, nextCanvas3, holdCanvas) {
   const blocksInRow = blockSize * Board.columns;
   const gameCanvasWidth = blocksInRow.toString();
@@ -36,11 +37,11 @@ function setCanvasSize(blockSize, gameCanvas, nextCanvas1, nextCanvas2, nextCanv
 
 // gets the canvas elements
 function getCanvases() {
-  const gameCanvas = document.querySelector('#gameCanvas');
-  const nextCanvas1 = document.querySelector('#nextCanvas1');
-  const nextCanvas2 = document.querySelector('#nextCanvas2');
-  const nextCanvas3 = document.querySelector('#nextCanvas3');
-  const holdCanvas = document.querySelector('#holdCanvas');
+  const gameCanvas = document.getElementById('gameCanvas');
+  const nextCanvas1 = document.getElementById('nextCanvas1');
+  const nextCanvas2 = document.getElementById('nextCanvas2');
+  const nextCanvas3 = document.getElementById('nextCanvas3');
+  const holdCanvas = document.getElementById('holdCanvas');
   return {
     gameCanvas, nextCanvas1, nextCanvas2, nextCanvas3, holdCanvas,
   };
@@ -53,7 +54,7 @@ export default function init() {
   } = getCanvases();
   const blockSize = getBlockSize();
   setCanvasSize(blockSize, gameCanvas, nextCanvas1, nextCanvas2, nextCanvas3, holdCanvas);
-  const playButton = document.querySelector('#playButton');
+  const playButton = document.getElementById('playButton');
   const settingsModal = document.getElementById('settingsModal');
   const helpModal = document.getElementById('helpModal');
   const game = new MyTetris(gameCanvas, nextCanvas1, nextCanvas2, nextCanvas3, holdCanvas, blockSize, playButton);
@@ -119,25 +120,27 @@ export default function init() {
     }
   });
 
-  // opens a panel with some helpful information
-  const helpButton = document.getElementById('helpButton');
-  helpButton.addEventListener('click', () => {
+  // opens a modal
+  function openModal(modal) {
     if (game.gameState === RUNNING) {
       game.switchGameStates(PAUSED);
     }
-    helpModal.style.display = 'block';
+    modal.style.display = 'block';
+  }
+
+  // opens a help panel when the user clicks on the helpButton
+  const helpButton = document.getElementById('helpButton');
+  helpButton.addEventListener('click', () => {
+    openModal(helpModal);
   });
 
   // opens a settings panel when the user clicks on the settingsButton
   const settingsButton = document.getElementById('settingsButton');
   settingsButton.addEventListener('click', () => {
-    if (game.gameState === RUNNING) {
-      game.switchGameStates(PAUSED);
-    }
-    settingsModal.style.display = 'block';
+    openModal(settingsModal);
   });
 
-  // clicking away from the settings/help panel closes it
+  // clicking away from the settings/help modal closes it
   window.onclick = (event) => {
     if (event.target === settingsModal || event.target === helpModal) {
       settingsModal.style.display = 'none';
