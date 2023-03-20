@@ -35,6 +35,7 @@ const HARD_DROP_SOUND = new Audio('resources/static/sounds/switch-1.mp3'); // ga
 const TETROMINO_LOCKED_SOUND = new Audio('resources/static/sounds/button-50.mp3'); // gamesounds.xyz
 const LEVEL_UP_SOUND = new Audio('resources/static/sounds/8bit_status_point_9.mp3'); // gamesounds.xyz
 const ON_EDGE_SOUND = new Audio('resources/static/sounds/clock-ticking-4.mp3'); // gamesounds.xyz
+const GAME_OVER_SOUND = new Audio('resources/static/sounds/ThisGameIsOver_mccartneytm.mp3'); // opengameart.org
 
 const SOUNDS = {
   BACKGROUND_MUSIC,
@@ -43,6 +44,7 @@ const SOUNDS = {
   TETROMINO_LOCKED_SOUND,
   LEVEL_UP_SOUND,
   ON_EDGE_SOUND,
+  GAME_OVER_SOUND,
 };
 
 export {
